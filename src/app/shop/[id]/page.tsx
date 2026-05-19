@@ -2,6 +2,7 @@ import { fetchShopById, fetchShops } from '@/lib/fetchShops';
 import { CATEGORY_EMOJI } from '@/lib/shops';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import NavigateButton from '@/components/NavigateButton';
 
 export async function generateStaticParams() {
   const shops = await fetchShops();
@@ -17,10 +18,6 @@ export default async function ShopPage({
   const shop = await fetchShopById(id);
 
   if (!shop) notFound();
-
-  const mapHref =
-    shop.mapUrl ||
-    `https://maps.google.com/?q=${encodeURIComponent(shop.address)}`;
 
   return (
     <div className="min-h-screen bg-orange-50">
@@ -64,15 +61,7 @@ export default async function ShopPage({
 
         {/* 地址、電話 */}
         <div className="bg-white rounded-3xl divide-y divide-stone-100 overflow-hidden mb-5 shadow-sm shadow-orange-900/10">
-          <a href={mapHref} target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-3 px-4 py-4 active:bg-orange-50 transition-colors">
-            <span className="text-xl">📍</span>
-            <div className="flex-1 min-w-0">
-              <div className="text-xs text-stone-400 mb-0.5">地址（點此開地圖）</div>
-              <div className="text-sm text-stone-700">{shop.address}</div>
-            </div>
-            <span className="text-stone-300 text-lg">›</span>
-          </a>
+          <NavigateButton shop={shop} />
           {shop.phone && (
             <a href={`tel:${shop.phone}`}
               className="flex items-center gap-3 px-4 py-4 active:bg-orange-50 transition-colors">
