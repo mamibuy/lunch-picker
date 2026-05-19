@@ -84,9 +84,8 @@ const SwipeCard = forwardRef<CardHandle, {
   const isTop    = stackIndex === 0;
 
   async function triggerSwipe(dir: 'left' | 'right') {
-    await fmAnimate(x, dir === 'right' ? SWIPE_OUT_X : -SWIPE_OUT_X, {
-      duration: 0.32, ease: 'easeIn',
-    } as Parameters<typeof fmAnimate>[2]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (fmAnimate as any)(x, dir === 'right' ? SWIPE_OUT_X : -SWIPE_OUT_X, { duration: 0.32, ease: 'easeIn' });
     onSwipe(dir);
   }
 
@@ -98,7 +97,8 @@ const SwipeCard = forwardRef<CardHandle, {
     } else if (info.velocity.x < -400 || info.offset.x < -SWIPE_THRESHOLD) {
       triggerSwipe('left');
     } else {
-      fmAnimate(x, 0, { type: 'spring', stiffness: 380, damping: 28 } as Parameters<typeof fmAnimate>[2]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (fmAnimate as any)(x, 0, { type: 'spring', stiffness: 380, damping: 28 });
     }
   }
 
