@@ -1,0 +1,36 @@
+export type Category = '便當' | '中餐' | '麵食' | '飲料' | '早午餐' | '異國料理' | '火鍋' | '素食' | '燒肉' | '健康餐' | '其他';
+export type PriceRange = '$' | '$$' | '$$$';
+
+export type Shop = {
+  id: string;
+  name: string;
+  category: Category;
+  description?: string;
+  address: string;
+  mapUrl?: string;
+  phone?: string;
+  priceRange?: PriceRange;
+  deal: string;
+  walkMinutes?: number;
+  photoUrl?: string;
+  tags?: string[];
+  visible: boolean;
+  lat?: number;
+  lng?: number;
+};
+
+export const CATEGORY_EMOJI: Record<Category, string> = {
+  '便當': '🍱',
+  '中餐': '🥢',
+  '麵食': '🍜',
+  '飲料': '🧋',
+  '早午餐': '🥐',
+  '異國料理': '🌏',
+  '火鍋': '🍲',
+  '素食': '🥗',
+  '燒肉': '🥩',
+  '健康餐': '🥦',
+  '其他': '🍽️',
+};
+
+export const ALL_CATEGORIES: Category[] = ['便當', '中餐', '麵食', '飲料', '早午餐', '異國料理', '火鍋', '素食', '燒肉', '健康餐', '其他'];
