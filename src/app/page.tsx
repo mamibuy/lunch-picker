@@ -2,6 +2,8 @@ import { fetchShops } from '@/lib/fetchShops';
 import ShopList from '@/components/ShopList';
 import TinderButton from '@/components/TinderButton';
 
+export const dynamic = 'force-dynamic';
+
 export default async function HomePage() {
   const shops = await fetchShops();
 

@@ -75,7 +75,7 @@ function rowToShop(headers: string[], values: string[], rowNum: number): Shop | 
 
 // ── 從 Google Sheet 讀取 ──────────────────────────────────────
 async function fetchFromSheet(url: string): Promise<Shop[]> {
-  const res = await fetch(url, { next: { revalidate: 300 } }); // 5 分鐘快取
+  const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
   const text = await res.text();
