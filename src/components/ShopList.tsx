@@ -516,7 +516,7 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
           className="flex items-center gap-1 px-2 py-1 rounded-lg active:bg-stone-100 transition-colors"
         >
           <span className="text-xs font-semibold" style={{ color: sortMode !== 'default' ? '#FF7A45' : '#888' }}>
-            {sortMode === 'distance' ? '📍 距離排序' : sortMode === 'badge' ? '🏷️ 店家屬性' : '排序'}
+            {sortMode === 'distance' ? '📍 距離排序' : sortMode === 'badge' ? '🏷️ 優惠類型' : '排序'}
           </span>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={sortMode !== 'default' ? '#FF7A45' : '#AAA'} strokeWidth="2.5" strokeLinecap="round">
             <path d="M6 9l6 6 6-6"/>
@@ -530,7 +530,7 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
               {([
                 { mode: 'default'  as SortMode, label: '預設排序' },
                 { mode: 'distance' as SortMode, label: '📍 距離排序' },
-                { mode: 'badge'    as SortMode, label: '🏷️ 店家屬性' },
+                { mode: 'badge'    as SortMode, label: '🏷️ 優惠類型' },
               ]).map(({ mode, label }) => (
                 <button
                   key={mode}
