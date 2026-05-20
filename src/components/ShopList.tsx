@@ -247,7 +247,7 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
         {/* === 翻牌模式 === */}
         <button
           onClick={() => setTinderOpen(true)}
-          className="flex-1 active:scale-95 transition-transform duration-150"
+          className="flex-1 aspect-square active:scale-95 transition-transform duration-150"
         >
           <img src="/images/tinder模式.png" alt="翻牌模式" className="w-full h-full object-contain" />
         </button>
@@ -256,7 +256,7 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
         <button
           onClick={pickRandom}
           disabled={isRolling}
-          className="flex-1 active:scale-95 transition-transform duration-150 disabled:opacity-70"
+          className="flex-1 aspect-square active:scale-95 transition-transform duration-150 disabled:opacity-70"
         >
           <img src="/images/隨便模式.png" alt="幫我決定" className="w-full h-full object-contain" />
         </button>
