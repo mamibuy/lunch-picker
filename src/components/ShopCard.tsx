@@ -1,6 +1,24 @@
 import Link from 'next/link';
-import { Shop, CATEGORY_EMOJI } from '@/lib/shops';
+import { Shop, BadgeType, CATEGORY_EMOJI } from '@/lib/shops';
 import { formatDistance } from '@/lib/geo';
+
+const BADGE_CONFIG: Record<BadgeType, { bg: string; shadow: string; icon: React.ReactNode; label: string }> = {
+  '特約店家': {
+    bg: '#FF5B5B', shadow: 'rgba(255,91,91,0.4)',
+    label: '特約店家',
+    icon: <svg width="9" height="9" viewBox="0 0 24 24" fill="white"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
+  },
+  '附近店家': {
+    bg: '#22C55E', shadow: 'rgba(34,197,94,0.4)',
+    label: '附近店家',
+    icon: <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5" fill="white" stroke="none"/></svg>,
+  },
+  '活動優惠': {
+    bg: '#F59E0B', shadow: 'rgba(245,158,11,0.4)',
+    label: '活動優惠',
+    icon: <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>,
+  },
+};
 
 export default function ShopCard({
   shop,
@@ -44,14 +62,18 @@ export default function ShopCard({
             </div>
           )}
 
-          {/* 特約店家 badge */}
+          {/* 動態徽章 */}
           <div className="absolute top-2.5 left-2">
-            <span className="flex items-center gap-1 text-white font-bold rounded-full px-2.5 py-1" style={{ background: '#FF5B5B', fontSize: '10px', boxShadow: '0 2px 6px rgba(255,91,91,0.4)' }}>
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="white">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-              </svg>
-              特約店家
-            </span>
+            {(() => {
+              const badge = BADGE_CONFIG[shop.badgeType ?? '特約店家'];
+              return (
+                <span className="flex items-center gap-1 text-white font-bold rounded-full px-2.5 py-1"
+                  style={{ background: badge.bg, fontSize: '10px', boxShadow: `0 2px 6px ${badge.shadow}` }}>
+                  {badge.icon}
+                  {badge.label}
+                </span>
+              );
+            })()}
           </div>
 
           {/* 喜好標記 */}

@@ -1,4 +1,4 @@
-import { Shop, Category, PriceRange, ALL_CATEGORIES } from './shops';
+import { Shop, Category, PriceRange, BadgeType, ALL_CATEGORIES, ALL_BADGE_TYPES } from './shops';
 
 // ── CSV 解析 ──────────────────────────────────────────────────
 // 處理 Google Sheets 匯出的 CSV（欄位值如有逗號會被雙引號包住）
@@ -82,6 +82,7 @@ function rowToShop(headers: string[], values: string[], rowNum: number): Shop | 
     visible:      true,
     lat:          isNaN(lat) ? undefined : lat,
     lng:          isNaN(lng) ? undefined : lng,
+    badgeType:    (ALL_BADGE_TYPES as string[]).includes(get('店家標籤')) ? get('店家標籤') as BadgeType : '特約店家',
   };
 }
 
