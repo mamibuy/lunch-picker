@@ -71,32 +71,6 @@ function sortShops(shops: Shop[], coords: LatLng | null, preferred: Category[], 
     .map((m) => m.shop);
 }
 
-// ── 星星裝飾 ────────────────────────────────────────────────────
-function CardStars({ gold = false }: { gold?: boolean }) {
-  const stars = [
-    { x: '10%', y: '7%',  s: 9,  o: 0.9 },
-    { x: '78%', y: '5%',  s: 6,  o: 0.7 },
-    { x: '65%', y: '18%', s: 12, o: 0.85 },
-    { x: '14%', y: '48%', s: 5,  o: 0.6 },
-    { x: '46%', y: '9%',  s: 7,  o: 0.75 },
-    { x: '30%', y: '38%', s: 4,  o: 0.65 },
-    { x: '84%', y: '32%', s: 5,  o: 0.7 },
-    { x: '5%',  y: '22%', s: 4,  o: 0.6 },
-    { x: '55%', y: '44%', s: 7,  o: 0.55 },
-    { x: '38%', y: '22%', s: 10, o: 0.8 },
-  ];
-  return (
-    <>
-      {stars.map((p, i) => (
-        <div key={i} className="absolute pointer-events-none select-none" style={{ left: p.x, top: p.y, opacity: p.o }}>
-          <svg width={p.s} height={p.s} viewBox="0 0 24 24" fill={gold && i % 3 === 0 ? '#FFE566' : 'white'}>
-            <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17 5.8 21.3l2.4-7.4L2 9.4h7.6z"/>
-          </svg>
-        </div>
-      ))}
-    </>
-  );
-}
 
 
 export default function ShopList({ shops }: { shops: Shop[] }) {
@@ -273,92 +247,18 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
         {/* === 翻牌模式 === */}
         <button
           onClick={() => setTinderOpen(true)}
-          className="flex-1 relative rounded-[28px] overflow-hidden text-left active:scale-95 transition-transform duration-150"
-          style={{
-            minHeight: '215px',
-            background: 'radial-gradient(circle at 30% 25%, #FF8585 0%, #FF6B6B 42%, #E63946 100%)',
-            boxShadow: '0 8px 24px rgba(255,107,107,0.4), inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -4px 8px rgba(0,0,0,0.1)',
-          }}
+          className="flex-1 active:scale-95 transition-transform duration-150"
         >
-          <CardStars />
-
-          {/* 底部光暈 */}
-          <div className="absolute bottom-0 right-0 pointer-events-none" style={{ width: '160px', height: '140px', background: 'radial-gradient(ellipse at 80% 90%, rgba(255,255,255,0.22) 0%, transparent 65%)' }}/>
-
-          {/* 流線軌跡 */}
-          <svg className="absolute bottom-0 right-0 pointer-events-none" width="155" height="130" viewBox="0 0 155 130" fill="none">
-            <path d="M8 122 Q55 75 140 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.45"/>
-          </svg>
-
-          {/* 插圖 */}
-          <div className="absolute pointer-events-none" style={{ bottom: '-10px', right: '-10px', width: '160px', height: '160px', transform: 'rotate(-5deg)', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.25))' }}>
-            <img src="/images/tinder模式.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-          </div>
-
-          {/* 文字內容 */}
-          <div className="relative p-5" style={{ zIndex: 10 }}>
-            <span className="inline-block mb-2.5" style={{ background: '#FFD93D', color: '#5A3A1A', fontWeight: 900, fontSize: '14px', padding: '6px 16px', borderRadius: '999px', boxShadow: '0 2px 6px rgba(0,0,0,0.15)' }}>
-              一起來玩!
-            </span>
-            <h3 style={{ fontSize: '36px', fontWeight: 900, color: '#FFFFFF', textShadow: '0 3px 0 rgba(0,0,0,0.15), 0 6px 12px rgba(0,0,0,0.2)', letterSpacing: '2px', lineHeight: 1.05, marginBottom: '8px' }}>
-              翻牌<br/>模式
-            </h3>
-            <p style={{ fontSize: '14px', fontWeight: 600, color: 'white', opacity: 0.95, lineHeight: 1.7, whiteSpace: 'nowrap' }}>
-              翻開卡牌<br/>探索美味驚喜
-            </p>
-          </div>
-
-          {/* 箭頭按鈕 */}
-          <div className="absolute flex items-center justify-center" style={{ bottom: '16px', right: '16px', zIndex: 20, width: '44px', height: '44px', borderRadius: '50%', background: 'white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E63946" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </div>
+          <img src="/images/tinder模式.png" alt="翻牌模式" className="w-full h-full object-contain" />
         </button>
 
         {/* === 幫我決定 === */}
         <button
           onClick={pickRandom}
           disabled={isRolling}
-          className="flex-1 relative rounded-[28px] overflow-hidden text-left active:scale-95 transition-transform duration-150 disabled:opacity-85"
-          style={{
-            minHeight: '215px',
-            background: 'radial-gradient(circle at 30% 25%, #FFCC6B 0%, #FFB547 42%, #F77F00 100%)',
-            boxShadow: '0 8px 24px rgba(247,127,0,0.38), inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -4px 8px rgba(0,0,0,0.1)',
-          }}
+          className="flex-1 active:scale-95 transition-transform duration-150 disabled:opacity-70"
         >
-          <CardStars gold />
-
-          <div className="absolute bottom-0 right-0 pointer-events-none" style={{ width: '160px', height: '140px', background: 'radial-gradient(ellipse at 80% 90%, rgba(255,255,255,0.22) 0%, transparent 65%)' }}/>
-
-          <svg className="absolute bottom-0 right-0 pointer-events-none" width="155" height="130" viewBox="0 0 155 130" fill="none">
-            <path d="M8 122 Q55 75 140 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.45"/>
-          </svg>
-
-          <div className="absolute pointer-events-none" style={{ bottom: '20px', right: '10px', width: '140px', height: '140px', transform: 'rotate(-8deg)', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.25))' }}>
-            <img src="/images/隨便模式.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-          </div>
-
-          <div className="relative p-5" style={{ zIndex: 10 }}>
-            <span className="inline-block mb-2.5" style={{ background: '#FFD93D', color: '#5A3A1A', fontWeight: 900, fontSize: '14px', padding: '6px 16px', borderRadius: '999px', boxShadow: '0 2px 6px rgba(0,0,0,0.15)' }}>
-              讓我幫你選!
-            </span>
-            <h3 style={{ fontSize: '36px', fontWeight: 900, color: '#FFFFFF', textShadow: '0 3px 0 rgba(0,0,0,0.15), 0 6px 12px rgba(0,0,0,0.2)', letterSpacing: '2px', lineHeight: 1.05, marginBottom: '8px' }}>
-              幫我<br/>決定
-            </h3>
-            <p style={{ fontSize: '14px', fontWeight: 600, color: 'white', opacity: 0.95, lineHeight: 1.7, whiteSpace: 'nowrap' }}>
-              {isRolling ? <>轉動中...<br/>&nbsp;</> : <>骰子一擲<br/>隨機選出好店</>}
-            </p>
-          </div>
-
-          <div className="absolute flex items-center justify-center" style={{ bottom: '16px', right: '16px', zIndex: 20, width: '44px', height: '44px', borderRadius: '50%', background: 'white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F77F00" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              {isRolling
-                ? <><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></>
-                : <path d="M5 12h14M12 5l7 7-7 7"/>
-              }
-            </svg>
-          </div>
+          <img src="/images/隨便模式.png" alt="幫我決定" className="w-full h-full object-contain" />
         </button>
       </div>
 
