@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { Shop, Category, ALL_CATEGORIES } from '@/lib/shops';
-import { LatLng, haversineDistance, geocodeAddress, formatDistance } from '@/lib/geo';
+import { LatLng, haversineDistance, geocodeAddress, geocodeAddressOnce, formatDistance } from '@/lib/geo';
 import { loadPreferences, savePreferences, loadPreferAny, savePreferAny, MAX_PREFERENCES } from '@/lib/preferences';
 import { CategoryIcon } from './CategoryIcon';
 import ShopCard from './ShopCard';
@@ -210,12 +210,13 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
       for (const shop of toGeocode) {
         if (cancelled) break;
         try {
-          const c = await geocodeAddress(shop.address);
+          const c = await geocodeAddressOnce(shop.address);
+          if (!c) { if (!cancelled) await new Promise(r => setTimeout(r, 1500)); continue; }
           updated[shop.id] = c;
           setShopCoords({ ...updated });
           localStorage.setItem('lp-shop-geo', JSON.stringify(updated));
         } catch {}
-        if (!cancelled) await new Promise(r => setTimeout(r, 1200));
+        if (!cancelled) await new Promise(r => setTimeout(r, 1500));
       }
       setGeocodingTotal(0);
     })();

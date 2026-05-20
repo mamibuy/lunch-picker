@@ -58,3 +58,19 @@ export function formatDistance(km: number): string {
 export function toWalkMinutes(distanceKm: number): number {
   return Math.max(1, Math.round(distanceKm * 1.3 * 12));
 }
+
+// 輕量版地址 geocode：只送一次請求，適合批次查詢店家座標
+// 回傳 null 代表找不到，不拋例外
+export async function geocodeAddressOnce(address: string): Promise<LatLng | null> {
+  const noNum = address.replace(/\d+之?\d*號.*$/, '').trim();
+  const q = noNum || address;
+  try {
+    const url = 'https://nominatim.openstreetmap.org/search?' +
+      new URLSearchParams({ q: `台灣 ${q}`, format: 'json', limit: '1' });
+    const res = await fetch(url, { headers: { 'Accept-Language': 'zh-TW,zh;q=0.9' } });
+    if (!res.ok) return null;
+    const data: { lat: string; lon: string }[] = await res.json();
+    if (data.length) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+  } catch {}
+  return null;
+}
