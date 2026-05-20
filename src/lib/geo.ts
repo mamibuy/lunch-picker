@@ -59,18 +59,29 @@ export function toWalkMinutes(distanceKm: number): number {
   return Math.max(1, Math.round(distanceKm * 1.3 * 12));
 }
 
-// 輕量版地址 geocode：只送一次請求，適合批次查詢店家座標
+// 輕量版地址 geocode：最多送兩次請求，適合批次查詢店家座標
 // 回傳 null 代表找不到，不拋例外
 export async function geocodeAddressOnce(address: string): Promise<LatLng | null> {
+  const headers = { 'Accept-Language': 'zh-TW,zh;q=0.9', 'User-Agent': 'lunch-picker-app/1.0' };
+
+  async function tryQuery(q: string, extra: Record<string, string> = {}): Promise<LatLng | null> {
+    try {
+      const url = 'https://nominatim.openstreetmap.org/search?' +
+        new URLSearchParams({ q, format: 'json', limit: '1', countrycodes: 'tw', ...extra });
+      const res = await fetch(url, { headers });
+      if (!res.ok) return null;
+      const data: { lat: string; lon: string }[] = await res.json();
+      return data.length ? { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) } : null;
+    } catch { return null; }
+  }
+
+  // 第一次：完整地址（含門牌）
+  const r1 = await tryQuery(`台灣 ${address}`);
+  if (r1) return r1;
+
+  // 第二次：去除門牌號後重試（需先等 1.2s 遵守速率限制）
   const noNum = address.replace(/\d+之?\d*號.*$/, '').trim();
-  const q = noNum || address;
-  try {
-    const url = 'https://nominatim.openstreetmap.org/search?' +
-      new URLSearchParams({ q: `台灣 ${q}`, format: 'json', limit: '1' });
-    const res = await fetch(url, { headers: { 'Accept-Language': 'zh-TW,zh;q=0.9' } });
-    if (!res.ok) return null;
-    const data: { lat: string; lon: string }[] = await res.json();
-    if (data.length) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-  } catch {}
-  return null;
+  if (!noNum || noNum === address) return null;
+  await new Promise(r => setTimeout(r, 1200));
+  return tryQuery(`台灣 ${noNum}`);
 }
