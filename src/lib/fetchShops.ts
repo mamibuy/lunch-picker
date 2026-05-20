@@ -40,8 +40,11 @@ function rowToShop(headers: string[], values: string[], rowNum: number): Shop | 
   // H 欄：支援多種標題名稱（特約內容 / 優惠資訊 / 特約優惠）
   const deal      = get('特約內容') || get('優惠資訊') || get('特約優惠');
   const visible   = get('是否顯示');
-  // T 欄：支援多種標題名稱
-  const badgeRaw  = get('店家標籤') || get('店家類型') || get('類型') || get('Badge') || get('badge');
+  // T 欄：先試標題名稱，全部找不到就直接讀第 20 欄（T 欄）的值
+  const badgeByName = get('店家標籤') || get('店家類型') || get('標籤類型') || get('類型') || get('Badge') || get('badge') || get('type');
+  const colT        = (values[19] ?? '').trim();
+  // 如果 colT 是 URL（照片連結）就不用；否則當備援
+  const badgeRaw    = badgeByName || (colT && !colT.startsWith('http') ? colT : '');
 
   // 「是否顯示」明確填「否」才隱藏；空白或欄位不存在都預設顯示
   if (visible === '否') return null;
@@ -99,7 +102,9 @@ async function fetchFromSheet(url: string): Promise<Shop[]> {
   if (!headerRow) return [];
 
   const headers = headerRow.map((h) => h.trim());
-  console.log('[試算表] 讀取到的欄位標題：', headers.join(' | '));
+  console.log('[試算表] 所有欄位標題：', headers.map((h, i) => `${String.fromCharCode(65 + i)}欄="${h}"`).join(' | '));
+  // 特別印出 T 欄（index 19）實際標題，方便比對
+  console.log(`[試算表] T欄標題偵測 → "${headers[19] ?? '（無此欄）'}"`);
 
   const shops: Shop[] = [];
 
