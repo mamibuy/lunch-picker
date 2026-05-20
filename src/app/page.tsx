@@ -9,7 +9,7 @@ export default async function HomePage() {
   const shops = await fetchShops();
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: 'linear-gradient(180deg, #FFF4E0 0%, #FFEBC8 60%, #FFE8C0 100%)' }}>
+    <div className="min-h-screen pb-24" style={{ background: '#FDEEDD' }}>
       <div className="max-w-lg mx-auto">
         <HomeHeader />
         <main className="px-4">

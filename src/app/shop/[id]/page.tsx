@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import NavigateButton from '@/components/NavigateButton';
 import PhotoGallery from '@/components/PhotoGallery';
+import FavButton from '@/components/FavButton';
 
 export async function generateStaticParams() {
   const shops = await fetchShops();
@@ -21,12 +22,13 @@ export default async function ShopPage({
   if (!shop) notFound();
 
   return (
-    <div className="min-h-screen bg-orange-50">
+    <div className="min-h-screen" style={{ background: '#FDEEDD' }}>
       {/* 頂部返回列 */}
-      <div className="sticky top-0 z-10 px-4 py-3 flex items-center gap-2 bg-orange-100">
+      <div className="sticky top-0 z-10 px-4 py-3 flex items-center justify-between gap-2 bg-orange-100">
         <Link href="/" className="flex items-center gap-1 font-semibold text-sm text-stone-700 active:opacity-70 transition-opacity">
           ← 返回列表
         </Link>
+        <FavButton shopId={shop.id} />
       </div>
 
       {/* 照片或 Emoji 佔位 */}

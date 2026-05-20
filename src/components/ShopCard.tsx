@@ -1,7 +1,6 @@
 'use client';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Shop, CATEGORY_EMOJI } from '@/lib/shops';
-import { formatDistance, toWalkMinutes } from '@/lib/geo';
 
 function isShopOpen(hours: string): boolean | null {
   const m = hours.match(/(\d{1,2}):(\d{2})\s*[-~–—至到]\s*(\d{1,2}):(\d{2})/);
@@ -31,28 +30,32 @@ function getBadge(type: string) {
 
 export default function ShopCard({
   shop,
-  distanceKm,
+  isFav = false,
+  onToggleFav,
   isPreferred,
   index = 0,
 }: {
   shop: Shop;
-  distanceKm?: number | null;
+  isFav?: boolean;
+  onToggleFav?: (id: string) => void;
   isPreferred?: boolean;
   index?: number;
 }) {
+  const router = useRouter();
+
   return (
-    <Link
-      href={`/shop/${shop.id}`}
-      className="block animate-fade-in-up"
+    <div
+      className="animate-fade-in-up"
       style={{ animationDelay: `${index * 0.06}s` }}
     >
       <div
+        onClick={() => router.push(`/shop/${shop.id}`)}
         className="bg-white rounded-[20px] overflow-hidden flex cursor-pointer active:scale-95 transition-transform duration-150"
         style={{
-          boxShadow: isPreferred
-            ? '0 4px 18px rgba(255,122,69,0.28), 0 1px 4px rgba(255,122,69,0.15)'
+          boxShadow: isFav
+            ? '0 4px 18px rgba(255,91,91,0.22), 0 1px 4px rgba(255,91,91,0.12)'
             : '0 2px 14px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05)',
-          border: isPreferred ? '1.5px solid rgba(255,122,69,0.4)' : '1.5px solid rgba(0,0,0,0.04)',
+          border: isFav ? '1.5px solid rgba(255,91,91,0.35)' : '1.5px solid rgba(0,0,0,0.04)',
         }}
       >
         {/* ── 左側照片 ── */}
@@ -71,7 +74,7 @@ export default function ShopCard({
             </div>
           )}
 
-          {/* T 欄徽章 — 顯示 shop.badgeType 原始文字 */}
+          {/* 徽章 */}
           <div className="absolute top-2.5 left-2">
             {(() => {
               const label = shop.badgeType || '特約店家';
@@ -86,11 +89,11 @@ export default function ShopCard({
             })()}
           </div>
 
-          {/* 喜好標記 */}
-          {isPreferred && (
+          {/* 收藏標記 */}
+          {isFav && (
             <div className="absolute bottom-2 left-2">
-              <span className="text-xs font-bold text-white rounded-full px-2 py-0.5" style={{ background: '#FF7A45', fontSize: '10px' }}>
-                ❤️ 你的菜
+              <span className="text-xs font-bold text-white rounded-full px-2 py-0.5" style={{ background: '#FF5B5B', fontSize: '10px' }}>
+                ❤️ 已收藏
               </span>
             </div>
           )}
@@ -99,16 +102,23 @@ export default function ShopCard({
         {/* ── 右側資訊 ── */}
         <div className="flex-1 p-3.5 flex flex-col gap-2" style={{ minHeight: '160px' }}>
           <div>
-            {/* 店名 + 愛心 */}
+            {/* 店名 + 愛心按鈕 */}
             <div className="flex items-start justify-between gap-2 mb-1.5">
               <h2 className="font-black text-stone-800 leading-snug" style={{ fontSize: '17px' }}>
                 {shop.name}
               </h2>
-              <div className="flex-shrink-0 w-7 h-7 flex items-center justify-center" style={{ color: isPreferred ? '#FF5B5B' : '#DDD' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill={isPreferred ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <button
+                onClick={(e) => { e.stopPropagation(); onToggleFav?.(shop.id); }}
+                className="flex-shrink-0 w-7 h-7 flex items-center justify-center active:scale-90 transition-transform duration-150"
+                aria-label={isFav ? '取消收藏' : '加入收藏'}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24"
+                  fill={isFav ? '#FF5B5B' : 'none'}
+                  stroke={isFav ? '#FF5B5B' : '#DDD'}
+                  strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                 </svg>
-              </div>
+              </button>
             </div>
 
             {/* 分類 tag */}
@@ -123,7 +133,7 @@ export default function ShopCard({
             </div>
           </div>
 
-          {/* 優惠資訊（淡黃色底） */}
+          {/* 優惠資訊 */}
           {shop.deal ? (
             <div className="rounded-xl px-2.5 py-2 flex items-start gap-1.5" style={{ background: '#FFFBEC' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="flex-shrink-0 mt-0.5">
@@ -158,6 +168,6 @@ export default function ShopCard({
           })()}
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

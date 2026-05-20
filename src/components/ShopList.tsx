@@ -8,6 +8,7 @@ import { LatLng, haversineDistance, geocodeAddress, geocodeAddressOnce, formatDi
 import { loadPreferences, savePreferences, loadPreferAny, savePreferAny, MAX_PREFERENCES } from '@/lib/preferences';
 import { CategoryIcon } from './CategoryIcon';
 import ShopCard from './ShopCard';
+import { getFavIds, setFavIds } from './FavButton';
 
 const TinderMode = dynamic(() => import('./TinderMode'), { ssr: false });
 
@@ -96,12 +97,15 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [shopCoords, setShopCoords] = useState<Record<string, LatLng>>({});
   const [geocodingTotal, setGeocodingTotal] = useState(0);
+  const [favShopIds, setFavShopIds] = useState<Set<string>>(new Set());
+  const [showFavsOnly, setShowFavsOnly] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setPreferred(loadPreferences());
     setPreferAny(loadPreferAny());
+    setFavShopIds(new Set(getFavIds()));
     try {
       const cached = localStorage.getItem('lp-shop-geo');
       if (cached) setShopCoords(JSON.parse(cached));
@@ -140,6 +144,13 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
     return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.status]);
+
+  function toggleFav(id: string) {
+    const ids = getFavIds();
+    const next = ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id];
+    setFavIds(next);
+    setFavShopIds(new Set(next));
+  }
 
   function openPrefPanel() {
     setDraftPref(preferred);
@@ -240,9 +251,9 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
   const isLocLoading = location.status === 'loading';
 
   return (
-    <div>
-      {/* ── 雙主功能卡 ── */}
-      <div className="flex gap-3 mb-4">
+    <div style={{ marginTop: '-80px' }}>
+      {/* ── 雙主功能卡（浮在 hero 圖上方） ── */}
+      <div className="relative z-10 flex gap-3 mb-4">
 
         {/* === 翻牌模式 === */}
         <button
@@ -293,7 +304,14 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
       {/* ── 次要功能列 ── */}
       <div className="flex gap-3 mb-4">
         {/* 我的收藏 */}
-        <button onClick={openPrefPanel} className="flex-1 bg-white rounded-[20px] px-3 py-3 flex items-center gap-2.5 active:scale-95 transition-transform duration-150" style={{ boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}>
+        <button
+          onClick={() => setShowFavsOnly((v) => !v)}
+          className="flex-1 bg-white rounded-[20px] px-3 py-3 flex items-center gap-2.5 active:scale-95 transition-transform duration-150"
+          style={{
+            boxShadow: showFavsOnly ? '0 2px 10px rgba(255,91,91,0.22)' : '0 2px 10px rgba(0,0,0,0.07)',
+            border: showFavsOnly ? '1.5px solid rgba(255,91,91,0.35)' : '1.5px solid transparent',
+          }}
+        >
           <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#FFF0F0' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="#FF5B5B">
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
@@ -301,11 +319,13 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
           </div>
           <div className="flex-1 text-left min-w-0">
             <div className="font-bold text-stone-800 text-sm">我的收藏</div>
-            <div className="text-stone-400 truncate" style={{ fontSize: '11px' }}>
-              {preferAny ? '隨便都好 🎲' : preferred.length > 0 ? preferred.join('、') : '設定口味偏好'}
+            <div className="truncate" style={{ fontSize: '11px', color: showFavsOnly ? '#FF5B5B' : '#AAA' }}>
+              {showFavsOnly ? `顯示 ${favShopIds.size} 家收藏` : favShopIds.size > 0 ? `已收藏 ${favShopIds.size} 家` : '點愛心加入收藏'}
             </div>
           </div>
-          <span className="text-stone-300 flex-shrink-0" style={{ fontSize: '18px' }}>›</span>
+          <span className="flex-shrink-0" style={{ fontSize: '18px', color: showFavsOnly ? '#FF5B5B' : '#CCC' }}>
+            {showFavsOnly ? '✕' : '›'}
+          </span>
         </button>
 
         {/* 我在哪 */}
@@ -491,15 +511,20 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
 
       {/* ── 店家列表 ── */}
       <div className="flex flex-col gap-3 pb-4">
-        {sorted.map((shop, i) => {
-          const shopLL = getShopLatLng(shop, shopCoords);
-          const dist = coords && shopLL ? haversineDistance(coords, shopLL) : null;
-          return (
-            <ShopCard key={shop.id} shop={shop} distanceKm={dist} isPreferred={preferred.includes(shop.category)} index={i} />
-          );
-        })}
-        {sorted.length === 0 && (
-          <div className="text-center text-stone-400 py-16 text-sm">這個分類還沒有特約店家 🍽️</div>
+        {(showFavsOnly ? sorted.filter((s) => favShopIds.has(s.id)) : sorted).map((shop, i) => (
+          <ShopCard
+            key={shop.id}
+            shop={shop}
+            isFav={favShopIds.has(shop.id)}
+            onToggleFav={toggleFav}
+            isPreferred={preferred.includes(shop.category)}
+            index={i}
+          />
+        ))}
+        {(showFavsOnly ? sorted.filter((s) => favShopIds.has(s.id)) : sorted).length === 0 && (
+          <div className="text-center text-stone-400 py-16 text-sm">
+            {showFavsOnly ? '還沒有收藏的店家，點愛心加入收藏 ❤️' : '這個分類還沒有特約店家 🍽️'}
+          </div>
         )}
       </div>
 
