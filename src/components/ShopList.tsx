@@ -98,21 +98,28 @@ function CardStars({ gold = false }: { gold?: boolean }) {
 // ── 插畫：翻牌模式卡牌 ──────────────────────────────────────────
 function PlayingCardsIllustration() {
   return (
-    <svg width="140" height="140" viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="140" height="140" viewBox="-8 0 96 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* 問號卡（後方，旋轉）— 移除內框描邊，只留卡片本體 */}
       <g transform="rotate(-14, 26, 52)">
         <rect x="2" y="18" width="47" height="62" rx="8" fill="white" opacity="0.85"/>
-        <rect x="5" y="21" width="41" height="56" rx="6" fill="none" stroke="#FF5B5B" strokeWidth="1.2" opacity="0.35"/>
         <text x="25.5" y="54" textAnchor="middle" fontSize="22" fill="#FF5B5B" opacity="0.5" fontWeight="bold" fontFamily="Georgia, serif">?</text>
       </g>
+
+      {/* 餐具卡（前方） */}
       <rect x="30" y="5" width="52" height="70" rx="9" fill="white"/>
       <circle cx="56" cy="36" r="16" fill="#FFF0EB" stroke="#FF7A45" strokeWidth="1.6"/>
-      <line x1="50" y1="28" x2="50" y2="33" stroke="#FF7A45" strokeWidth="1.6" strokeLinecap="round"/>
-      <line x1="54" y1="28" x2="54" y2="33" stroke="#FF7A45" strokeWidth="1.6" strokeLinecap="round"/>
-      <line x1="58" y1="28" x2="58" y2="33" stroke="#FF7A45" strokeWidth="1.6" strokeLinecap="round"/>
-      <path d="M50 33 Q54 37 58 33 L58 44 Q54 46 50 44 Z" fill="#FF7A45"/>
-      <line x1="64" y1="28" x2="64" y2="44" stroke="#FF7A45" strokeWidth="1.8" strokeLinecap="round"/>
-      <path d="M64 28 Q68 30 68 34 Q68 37 64 37" fill="#FF7A45" stroke="none"/>
-      <text x="82" y="20" textAnchor="middle" fontSize="10" fill="#FF5B5B" fontWeight="700" fontFamily="Georgia, serif">?</text>
+
+      {/* 叉子（左）：2條叉齒 + 弧形底座 + 把手 */}
+      <rect x="46"  y="23" width="2.5" height="11" rx="1.2" fill="#FF7A45"/>
+      <rect x="51.5" y="23" width="2.5" height="11" rx="1.2" fill="#FF7A45"/>
+      <path d="M46 34 L46 37 Q50 41 54 37 L54 34 Z" fill="#FF7A45"/>
+      <rect x="47.5" y="37" width="4.5" height="11" rx="2.2" fill="#FF7A45"/>
+
+      {/* 刀子（右）：刀身（直邊左、弧邊右）+ 把手 */}
+      <path d="M61.5 23 L61.5 37 L65 37 Q67.5 30 65 23 Z" fill="#FF7A45"/>
+      <rect x="61.5" y="37" width="3.5" height="11" rx="1.8" fill="#FF7A45"/>
+
+      {/* 裝飾星星 */}
       <path d="M14,8 L15.2,12.2 L19.5,13 L15.2,13.8 L14,18 L12.8,13.8 L8.5,13 L12.8,12.2 Z" fill="white" opacity="0.9"/>
       <path d="M78,60 L79,62.8 L81.8,63.5 L79,64.2 L78,67 L77,64.2 L74.2,63.5 L77,62.8 Z" fill="white" opacity="0.7"/>
       <circle cx="18" cy="60" r="2.5" fill="white" opacity="0.6"/>
