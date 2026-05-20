@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 export default function PhotoGallery({ photos, name }: { photos: string[]; name: string }) {
   const [current, setCurrent] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   if (photos.length === 0) return null;
 
@@ -11,9 +12,17 @@ export default function PhotoGallery({ photos, name }: { photos: string[]; name:
     return <img src={photos[0]} alt={name} className="w-full h-56 object-cover" />;
   }
 
+  function scrollTo(index: number) {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTo({ left: el.clientWidth * index, behavior: 'smooth' });
+    setCurrent(index);
+  }
+
   return (
-    <div className="relative">
+    <div className="relative group">
       <div
+        ref={scrollRef}
         className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar"
         onScroll={(e) => {
           const el = e.currentTarget;
@@ -49,6 +58,26 @@ export default function PhotoGallery({ photos, name }: { photos: string[]; name:
       <div className="absolute top-2 right-2 bg-black/40 text-white text-xs px-2 py-0.5 rounded-full">
         {current + 1} / {photos.length}
       </div>
+
+      {/* 左箭頭 */}
+      {current > 0 && (
+        <button
+          onClick={() => scrollTo(current - 1)}
+          className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/30 text-white text-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/50"
+        >
+          ‹
+        </button>
+      )}
+
+      {/* 右箭頭 */}
+      {current < photos.length - 1 && (
+        <button
+          onClick={() => scrollTo(current + 1)}
+          className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/30 text-white text-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/50"
+        >
+          ›
+        </button>
+      )}
     </div>
   );
 }
