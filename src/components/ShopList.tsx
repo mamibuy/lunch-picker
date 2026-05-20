@@ -439,7 +439,7 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
             </div>
           </div>
           {location.status === 'set' ? (
-            <button onClick={(e) => { e.stopPropagation(); setLocation({ status: 'none' }); }} className="text-stone-300 text-sm hover:text-red-400 transition-colors flex-shrink-0 p-1">✕</button>
+            <span onClick={(e) => { e.stopPropagation(); setLocation({ status: 'none' }); }} className="text-stone-300 text-sm hover:text-red-400 transition-colors flex-shrink-0 p-1 cursor-pointer">✕</span>
           ) : (
             <span className="text-stone-300 flex-shrink-0" style={{ fontSize: '18px' }}>›</span>
           )}
