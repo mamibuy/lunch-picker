@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { Shop, CATEGORY_EMOJI } from '@/lib/shops';
+import { formatDistance, toWalkMinutes } from '@/lib/geo';
 
 function isShopOpen(hours: string): boolean | null {
   const m = hours.match(/(\d{1,2}):(\d{2})\s*[-~–—至到]\s*(\d{1,2}):(\d{2})/);
@@ -30,10 +31,12 @@ function getBadge(type: string) {
 
 export default function ShopCard({
   shop,
+  distanceKm,
   isPreferred,
   index = 0,
 }: {
   shop: Shop;
+  distanceKm?: number | null;
   isPreferred?: boolean;
   index?: number;
 }) {
@@ -108,7 +111,7 @@ export default function ShopCard({
               </div>
             </div>
 
-            {/* 分類 tag */}
+            {/* 分類 tag + 步行時間 */}
             <div className="flex items-center gap-1.5 flex-wrap mb-2">
               <span
                 className="text-xs font-semibold px-2.5 py-0.5 rounded-full"
@@ -117,6 +120,17 @@ export default function ShopCard({
                 {CATEGORY_EMOJI[shop.category]} {shop.category}
                 {shop.priceRange ? ` · ${shop.priceRange}` : ''}
               </span>
+              {(distanceKm != null || shop.walkMinutes != null) && (
+                <>
+                  <span className="text-stone-300" style={{ fontSize: '11px' }}>|</span>
+                  <span className="flex items-center gap-0.5 text-stone-400" style={{ fontSize: '11px' }}>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3" fill="currentColor" stroke="none"/>
+                    </svg>
+                    步行 {distanceKm != null ? toWalkMinutes(distanceKm) : shop.walkMinutes} 分鐘
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
