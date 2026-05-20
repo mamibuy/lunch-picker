@@ -1,6 +1,6 @@
 function LeafDecoration() {
   return (
-    <svg width="95" height="115" viewBox="0 0 95 115" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="48" height="58" viewBox="0 0 95 115" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M 12 115 C 2 92 -4 65 10 38 C 22 14 55 4 72 22 C 91 40 86 80 63 97 C 44 111 26 118 12 115 Z" fill="#5BB85C"/>
       <path d="M12 115 C 24 90 38 60 58 35" stroke="#3A8B3D" strokeWidth="2.8" fill="none" strokeLinecap="round"/>
       <path d="M36 84 C 48 77 62 72 68 66" stroke="#3A8B3D" strokeWidth="1.6" fill="none" strokeLinecap="round"/>
