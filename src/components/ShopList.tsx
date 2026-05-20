@@ -39,17 +39,19 @@ function sortShops(shops: Shop[], coords: LatLng | null, preferred: Category[], 
     isPreferred: preferred.includes(s.category),
   }));
 
-  if (mode === 'distance' && coords) {
-    return withDist
-      .filter((m) => m.dist != null)
+  const withCoords = withDist.filter((m) => m.dist != null);
+  const hasCoords  = withCoords.length > 0;
+
+  if (mode === 'distance') {
+    if (!coords || !hasCoords) return withDist.map((m) => m.shop);
+    return withCoords
       .sort((a, b) => (a.dist ?? 0) - (b.dist ?? 0))
       .slice(0, 20)
       .map((m) => m.shop);
   }
 
   if (mode === 'badge') {
-    const withCoords = withDist.filter((m) => m.dist != null);
-    const base = coords && withCoords.length > 0
+    const base = coords && hasCoords
       ? withCoords.sort((a, b) => (a.dist ?? 0) - (b.dist ?? 0)).slice(0, 20)
       : withDist;
     return [...base]
