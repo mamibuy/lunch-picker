@@ -40,7 +40,8 @@ function rowToShop(headers: string[], values: string[], rowNum: number): Shop | 
   // H 欄：支援多種標題名稱（特約內容 / 優惠資訊 / 特約優惠）
   const deal      = get('特約內容') || get('優惠資訊') || get('特約優惠');
   const visible   = get('是否顯示');
-  const badgeRaw  = get('店家標籤');
+  // T 欄：支援多種標題名稱
+  const badgeRaw  = get('店家標籤') || get('店家類型') || get('類型') || get('Badge') || get('badge');
 
   // 「是否顯示」明確填「否」才隱藏；空白或欄位不存在都預設顯示
   if (visible === '否') return null;
@@ -84,7 +85,7 @@ function rowToShop(headers: string[], values: string[], rowNum: number): Shop | 
     visible:      true,
     lat:          isNaN(lat) ? undefined : lat,
     lng:          isNaN(lng) ? undefined : lng,
-    badgeType:    (ALL_BADGE_TYPES as string[]).includes(badgeRaw) ? badgeRaw as BadgeType : '特約店家',
+    badgeType:    badgeRaw || '特約店家',
   };
 }
 

@@ -20,7 +20,7 @@ export type Shop = {
   visible: boolean;
   lat?: number;
   lng?: number;
-  badgeType?: BadgeType;
+  badgeType?: string;
 };
 
 export const CATEGORY_EMOJI: Record<Category, string> = {
