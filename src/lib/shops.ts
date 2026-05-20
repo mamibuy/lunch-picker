@@ -12,7 +12,7 @@ export type Shop = {
   mapUrl?: string;
   phone?: string;
   priceRange?: PriceRange;
-  deal: string;
+  deal?: string;
   walkMinutes?: number;
   photoUrl?: string;
   photos?: string[];

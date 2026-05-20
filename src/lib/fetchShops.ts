@@ -75,7 +75,7 @@ function rowToShop(headers: string[], values: string[], rowNum: number): Shop | 
     mapUrl:       get('地圖連結') || undefined,
     phone:        get('電話')     || undefined,
     priceRange:   (['$', '$$', '$$$'].includes(priceRaw) ? priceRaw : undefined) as PriceRange | undefined,
-    deal: deal || '（特約內容待補）',
+    deal: deal || undefined,
     photos: (() => {
       const list = [
         get('照片1') || get('照片連結'),
@@ -111,7 +111,7 @@ async function fetchFromSheet(url: string): Promise<Shop[]> {
   dataRows.forEach((row, i) => {
     const shop = rowToShop(headers, row, i + 2); // +2 因為第 1 列是標題
     if (shop) {
-      console.log(`[試算表] 第 ${i + 2} 列：${shop.name} ／ 分類=${shop.category} ／ 標籤=${shop.badgeType} ／ 優惠=${shop.deal.slice(0, 20)}`);
+      console.log(`[試算表] 第 ${i + 2} 列：${shop.name} ／ 分類=${shop.category} ／ 標籤=${shop.badgeType} ／ 優惠=${(shop.deal ?? '').slice(0, 20)}`);
       shops.push(shop);
     }
   });
