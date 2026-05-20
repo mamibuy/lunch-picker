@@ -1,6 +1,19 @@
+'use client';
 import Link from 'next/link';
 import { Shop, CATEGORY_EMOJI } from '@/lib/shops';
 import { formatDistance } from '@/lib/geo';
+
+function isShopOpen(hours: string): boolean | null {
+  const m = hours.match(/(\d{1,2}):(\d{2})\s*[-~–—至到]\s*(\d{1,2}):(\d{2})/);
+  if (!m) return null;
+  const startMin = parseInt(m[1]) * 60 + parseInt(m[2]);
+  const endMin   = parseInt(m[3]) * 60 + parseInt(m[4]);
+  const now      = new Date();
+  const nowMin   = now.getHours() * 60 + now.getMinutes();
+  return endMin > startMin
+    ? nowMin >= startMin && nowMin < endMin
+    : nowMin >= startMin || nowMin < endMin;
+}
 
 const StarIcon = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="white"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>;
 const PinIcon  = () => <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5" fill="white" stroke="none"/></svg>;
@@ -132,6 +145,24 @@ export default function ShopCard({
           ) : shop.description ? (
             <p className="text-stone-700 whitespace-pre-line" style={{ fontSize: '11px' }}>{shop.description}</p>
           ) : null}
+
+          {/* 營業時間 */}
+          {shop.hours && (() => {
+            const open = isShopOpen(shop.hours);
+            return (
+              <div className="flex items-center gap-1.5 mt-1">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#AAA" strokeWidth="2" strokeLinecap="round" className="flex-shrink-0">
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+                {open !== null && (
+                  <span className="font-bold flex-shrink-0" style={{ fontSize: '11px', color: open ? '#16A34A' : '#DC2626' }}>
+                    {open ? '營業中' : '休息中'}
+                  </span>
+                )}
+                <span className="text-stone-400" style={{ fontSize: '11px' }}>{shop.hours}</span>
+              </div>
+            );
+          })()}
         </div>
       </div>
     </Link>

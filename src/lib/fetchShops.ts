@@ -66,6 +66,11 @@ function rowToShop(headers: string[], values: string[], rowNum: number): Shop | 
   const lat = parseFloat(get('緯度'));
   const lng = parseFloat(get('經度'));
   const tagsRaw = get('標籤');
+  // U 欄：營業時間（先試標題，再用位置 index 20）
+  const hoursRaw = get('營業時間') || get('時間') || get('開放時間') || (() => {
+    const colU = (values[20] ?? '').trim();
+    return colU && !colU.startsWith('http') ? colU : '';
+  })();
 
   return {
     id: String(rowNum),
@@ -94,6 +99,7 @@ function rowToShop(headers: string[], values: string[], rowNum: number): Shop | 
     lat:          isNaN(lat) ? undefined : lat,
     lng:          isNaN(lng) ? undefined : lng,
     badgeType:    badgeRaw || '特約店家',
+    hours:        hoursRaw || undefined,
   };
 }
 

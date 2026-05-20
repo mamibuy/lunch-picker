@@ -21,6 +21,7 @@ export type Shop = {
   lat?: number;
   lng?: number;
   badgeType?: string;
+  hours?: string;
 };
 
 export const CATEGORY_EMOJI: Record<Category, string> = {
