@@ -160,6 +160,7 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
 
   const [tinderOpen, setTinderOpen] = useState(false);
   const [sortMode, setSortMode] = useState<SortMode>('default');
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -399,38 +400,6 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
         </button>
       </div>
 
-      {/* ── 排序模式 ── */}
-      <div className="flex gap-2 mb-4">
-        {([
-          { mode: 'distance' as SortMode, icon: '📍', label: '距離排序', desc: '由近到遠前20名' },
-          { mode: 'badge'    as SortMode, icon: '🏷️', label: '店家屬性', desc: '特約 › 活動 › 附近' },
-        ] as const).map(({ mode, icon, label, desc }) => {
-          const active = sortMode === mode;
-          return (
-            <button
-              key={mode}
-              onClick={() => activateSortMode(mode)}
-              className="flex-1 flex items-center gap-2 rounded-[18px] px-3 py-2.5 transition-all duration-150 active:scale-95"
-              style={active
-                ? { background: '#FF7A45', boxShadow: '0 3px 12px rgba(255,122,69,0.35)' }
-                : { background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', border: '1.5px solid #EEE' }}
-            >
-              <span style={{ fontSize: '16px' }}>{icon}</span>
-              <div className="text-left min-w-0">
-                <div className="font-bold text-xs leading-none mb-0.5" style={{ color: active ? 'white' : '#333' }}>{label}</div>
-                <div style={{ fontSize: '10px', color: active ? 'rgba(255,255,255,0.8)' : '#999' }}>{desc}</div>
-              </div>
-              {active && (
-                <button
-                  onClick={(e) => { e.stopPropagation(); setSortMode('default'); }}
-                  className="ml-auto text-white opacity-70 hover:opacity-100 text-xs font-bold flex-shrink-0"
-                >✕</button>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
       {/* ── 偏好面板 ── */}
       {showPrefPanel && (
         <div className="bg-white rounded-[24px] p-4 mb-4 animate-fade-in-up" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.09)' }}>
@@ -539,13 +508,46 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
         ))}
       </div>
 
-      {/* 口味符合提示 / 排序說明 */}
-      {sortMode === 'distance' && coords && (
-        <p className="text-xs text-stone-400 mb-3 px-1">📍 依距離由近到遠，顯示最近 20 家</p>
-      )}
-      {sortMode === 'badge' && coords && (
-        <p className="text-xs text-stone-400 mb-3 px-1">🏷️ 距離最近 20 家，依特約店家 › 活動優惠 › 附近店家排列</p>
-      )}
+      {/* ── 排序下拉 ── */}
+      <div className="relative flex items-center justify-between mb-3">
+        <span className="text-xs text-stone-400">{sorted.length} 家</span>
+        <button
+          onClick={() => setShowSortDropdown((v) => !v)}
+          className="flex items-center gap-1 px-2 py-1 rounded-lg active:bg-stone-100 transition-colors"
+        >
+          <span className="text-xs font-semibold" style={{ color: sortMode !== 'default' ? '#FF7A45' : '#888' }}>
+            {sortMode === 'distance' ? '📍 距離排序' : sortMode === 'badge' ? '🏷️ 店家屬性' : '排序'}
+          </span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={sortMode !== 'default' ? '#FF7A45' : '#AAA'} strokeWidth="2.5" strokeLinecap="round">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </button>
+
+        {showSortDropdown && (
+          <>
+            <div className="fixed inset-0 z-10" onClick={() => setShowSortDropdown(false)}/>
+            <div className="absolute right-0 top-full mt-1 bg-white rounded-2xl z-20 overflow-hidden" style={{ minWidth: '160px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}>
+              {([
+                { mode: 'default'  as SortMode, label: '預設排序' },
+                { mode: 'distance' as SortMode, label: '📍 距離排序' },
+                { mode: 'badge'    as SortMode, label: '🏷️ 店家屬性' },
+              ]).map(({ mode, label }) => (
+                <button
+                  key={mode}
+                  onClick={() => { activateSortMode(mode); setShowSortDropdown(false); }}
+                  className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold transition-colors active:bg-orange-50"
+                  style={{ color: sortMode === mode ? '#FF7A45' : '#333', borderBottom: '1px solid #F5F5F5' }}
+                >
+                  <span>{label}</span>
+                  {sortMode === mode && <span style={{ color: '#FF7A45' }}>✓</span>}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* 口味符合提示 */}
       {sortMode === 'default' && !preferAny && preferred.length > 0 && activeCategory === '全部' && sorted.some((s) => preferred.includes(s.category)) && (
         <p className="text-xs text-stone-400 mb-3 px-1">❤️ 你喜歡的口味排在前面</p>
       )}
