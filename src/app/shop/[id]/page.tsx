@@ -53,7 +53,7 @@ export default async function ShopPage({
         {/* 特約內容 */}
         <div className="bg-orange-500 text-white rounded-3xl p-4 mb-5 shadow-sm shadow-orange-900/20">
           <div className="text-xs font-bold opacity-75 mb-1 tracking-wider">✨ 員工特約優惠</div>
-          <div className="text-lg font-black leading-snug">{shop.deal}</div>
+          <div className="text-lg font-black leading-snug whitespace-pre-line">{shop.deal}</div>
         </div>
 
         {shop.description && (

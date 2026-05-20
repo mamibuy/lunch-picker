@@ -1,4 +1,5 @@
 import { Shop, Category, PriceRange, BadgeType, ALL_CATEGORIES, ALL_BADGE_TYPES } from './shops';
+import { extractCoordsFromMapUrl, writeShopCoords } from './coordsWriter';
 
 // ── CSV 解析 ──────────────────────────────────────────────────
 // 處理 Google Sheets 匯出的 CSV（欄位值如有逗號會被雙引號包住）
@@ -63,8 +64,11 @@ function rowToShop(headers: string[], values: string[], rowNum: number): Shop | 
   }
 
   const priceRaw = get('價位');
-  const lat = parseFloat(get('緯度'));
-  const lng = parseFloat(get('經度'));
+  // 先試欄位標題，再用 V（index 21）、W（index 22）位置備援（系統自動填入的座標）
+  const latRaw = get('緯度') || get('Lat') || (values[21] ?? '').trim();
+  const lngRaw = get('經度') || get('Lng') || (values[22] ?? '').trim();
+  const lat = parseFloat(latRaw);
+  const lng = parseFloat(lngRaw);
   const tagsRaw = get('標籤');
   // U 欄：營業時間（先試標題，再用位置 index 20）
   const hoursRaw = get('營業時間') || get('時間') || get('開放時間') || (() => {
@@ -126,6 +130,24 @@ async function fetchFromSheet(url: string): Promise<Shop[]> {
       shops.push(shop);
     }
   });
+
+  // 對沒有座標但有 Google Maps URL 的店家，server-side 解析座標並寫回 V/W 欄
+  const needCoords = shops.filter((s) => s.lat == null && s.lng == null && s.mapUrl);
+  if (needCoords.length > 0) {
+    console.log(`[試算表] 共 ${needCoords.length} 家店需解析座標...`);
+    await Promise.all(
+      needCoords.map(async (shop) => {
+        const coords = await extractCoordsFromMapUrl(shop.mapUrl!);
+        if (coords) {
+          shop.lat = coords.lat;
+          shop.lng = coords.lng;
+          console.log(`[試算表] ${shop.name} → lat=${coords.lat} lng=${coords.lng}`);
+          // 寫回試算表 V/W 欄（需設定 GOOGLE_SERVICE_ACCOUNT_EMAIL / PRIVATE_KEY）
+          writeShopCoords(url, parseInt(shop.id), coords.lat, coords.lng).catch(() => {});
+        }
+      })
+    );
+  }
 
   return shops;
 }
