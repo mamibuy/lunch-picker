@@ -53,3 +53,8 @@ export function formatDistance(km: number): string {
   if (km < 0.1) return `${Math.round(km * 1000)} 公尺`;
   return `${km.toFixed(1)} 公里`;
 }
+
+// 直線距離換算步行分鐘（市區路徑係數 1.3、步行速度 5 km/h）
+export function toWalkMinutes(distanceKm: number): number {
+  return Math.max(1, Math.round(distanceKm * 1.3 * 12));
+}
