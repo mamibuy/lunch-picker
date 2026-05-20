@@ -47,11 +47,12 @@ function sortShops(shops: Shop[], coords: LatLng | null, preferred: Category[], 
       .map((m) => m.shop);
   }
 
-  if (mode === 'badge' && coords) {
-    return withDist
-      .filter((m) => m.dist != null)
-      .sort((a, b) => (a.dist ?? 0) - (b.dist ?? 0))
-      .slice(0, 20)
+  if (mode === 'badge') {
+    const withCoords = withDist.filter((m) => m.dist != null);
+    const base = coords && withCoords.length > 0
+      ? withCoords.sort((a, b) => (a.dist ?? 0) - (b.dist ?? 0)).slice(0, 20)
+      : withDist;
+    return [...base]
       .sort((a, b) => badgePriority(a.shop.badgeType) - badgePriority(b.shop.badgeType))
       .map((m) => m.shop);
   }
