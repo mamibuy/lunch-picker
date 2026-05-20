@@ -34,11 +34,12 @@ function parseCSV(text: string): string[][] {
 function rowToShop(headers: string[], values: string[], rowNum: number): Shop | null {
   const get = (col: string) => (values[headers.indexOf(col)] ?? '').trim();
 
-  const name     = get('店名');
-  const category = get('分類');
-  const address  = get('地址');
-  const deal     = get('特約內容');
-  const visible  = get('是否顯示');
+  const name      = get('店名');
+  const category  = get('分類');
+  const address   = get('地址');
+  const deal      = get('特約內容');
+  const visible   = get('是否顯示');
+  const badgeRaw  = get('店家標籤');
 
   // 「是否顯示」明確填「否」才隱藏；空白或欄位不存在都預設顯示
   if (visible === '否') return null;
@@ -82,7 +83,7 @@ function rowToShop(headers: string[], values: string[], rowNum: number): Shop | 
     visible:      true,
     lat:          isNaN(lat) ? undefined : lat,
     lng:          isNaN(lng) ? undefined : lng,
-    badgeType:    (ALL_BADGE_TYPES as string[]).includes(get('店家標籤')) ? get('店家標籤') as BadgeType : '特約店家',
+    badgeType:    (ALL_BADGE_TYPES as string[]).includes(badgeRaw) ? badgeRaw as BadgeType : '特約店家',
   };
 }
 
@@ -96,11 +97,16 @@ async function fetchFromSheet(url: string): Promise<Shop[]> {
   if (!headerRow) return [];
 
   const headers = headerRow.map((h) => h.trim());
+  console.log('[試算表] 讀取到的欄位標題：', headers.join(' | '));
+
   const shops: Shop[] = [];
 
   dataRows.forEach((row, i) => {
     const shop = rowToShop(headers, row, i + 2); // +2 因為第 1 列是標題
-    if (shop) shops.push(shop);
+    if (shop) {
+      console.log(`[試算表] 第 ${i + 2} 列：${shop.name} ／ 分類=${shop.category} ／ 標籤=${shop.badgeType}`);
+      shops.push(shop);
+    }
   });
 
   return shops;
