@@ -84,7 +84,7 @@ export default function ShopCard({
         </div>
 
         {/* ── 右側資訊 ── */}
-        <div className="flex-1 p-3.5 flex flex-col justify-between" style={{ minHeight: '160px' }}>
+        <div className="flex-1 p-3.5 flex flex-col gap-2" style={{ minHeight: '160px' }}>
           <div>
             {/* 店名 + 愛心 */}
             <div className="flex items-start justify-between gap-2 mb-1.5">
