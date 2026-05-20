@@ -30,12 +30,15 @@ const GPS_LOADING_MSGS = [
   '計算步行幾步會餓昏...',
 ];
 
-function sortShops(shops: Shop[], coords: LatLng | null, preferred: Category[], mode: SortMode): Shop[] {
+function getShopLatLng(s: Shop, cached: Record<string, LatLng>): LatLng | null {
+  if (s.lat != null && s.lng != null) return { lat: s.lat, lng: s.lng };
+  return cached[s.id] ?? null;
+}
+
+function sortShops(shops: Shop[], coords: LatLng | null, preferred: Category[], mode: SortMode, cached: Record<string, LatLng>): Shop[] {
   const withDist = shops.map((s) => ({
     shop: s,
-    dist: coords && s.lat != null && s.lng != null
-      ? haversineDistance(coords, { lat: s.lat, lng: s.lng })
-      : null,
+    dist: coords ? (() => { const ll = getShopLatLng(s, cached); return ll ? haversineDistance(coords, ll) : null; })() : null,
     isPreferred: preferred.includes(s.category),
   }));
 
@@ -175,13 +178,51 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
   const [tinderOpen, setTinderOpen] = useState(false);
   const [sortMode, setSortMode] = useState<SortMode>('default');
   const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [shopCoords, setShopCoords] = useState<Record<string, LatLng>>({});
+  const [geocodingTotal, setGeocodingTotal] = useState(0);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setPreferred(loadPreferences());
     setPreferAny(loadPreferAny());
+    try {
+      const cached = localStorage.getItem('lp-shop-geo');
+      if (cached) setShopCoords(JSON.parse(cached));
+    } catch {}
   }, []);
+
+  // 定位設定後，自動 geocode 沒有座標的店家（結果存 localStorage）
+  useEffect(() => {
+    if (location.status !== 'set') return;
+
+    let cachedNow: Record<string, LatLng> = {};
+    try { const s = localStorage.getItem('lp-shop-geo'); if (s) cachedNow = JSON.parse(s); } catch {}
+
+    const toGeocode = shops.filter(s => s.lat == null && s.lng == null && s.address && !cachedNow[s.id]);
+    if (toGeocode.length === 0) return;
+
+    setGeocodingTotal(toGeocode.length);
+    let cancelled = false;
+    const updated = { ...cachedNow };
+
+    (async () => {
+      for (const shop of toGeocode) {
+        if (cancelled) break;
+        try {
+          const c = await geocodeAddress(shop.address);
+          updated[shop.id] = c;
+          setShopCoords({ ...updated });
+          localStorage.setItem('lp-shop-geo', JSON.stringify(updated));
+        } catch {}
+        if (!cancelled) await new Promise(r => setTimeout(r, 1200));
+      }
+      setGeocodingTotal(0);
+    })();
+
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.status]);
 
   function openPrefPanel() {
     setDraftPref(preferred);
@@ -207,7 +248,7 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
 
   const categorised = activeCategory === '全部' ? shops : shops.filter((s) => s.category === activeCategory);
   const coords = location.status === 'set' ? location.coords : null;
-  const sorted = sortShops(categorised, coords, preferAny ? [] : preferred, sortMode);
+  const sorted = sortShops(categorised, coords, preferAny ? [] : preferred, sortMode, shopCoords);
 
   function activateSortMode(mode: SortMode) {
     if (mode !== 'default' && location.status !== 'set') {
@@ -554,6 +595,13 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
         ))}
       </div>
 
+      {/* 正在 geocode 店家座標 */}
+      {geocodingTotal > 0 && (
+        <p className="text-xs text-stone-400 mb-3 px-1 animate-pulse">
+          📡 正在計算店家距離，請稍候…
+        </p>
+      )}
+
       {/* ── 排序下拉 ── */}
       <div className="relative flex items-center justify-between mb-3">
         <span className="text-xs text-stone-400">{sorted.length} 家</span>
@@ -601,9 +649,8 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
       {/* ── 店家列表 ── */}
       <div className="flex flex-col gap-3 pb-4">
         {sorted.map((shop, i) => {
-          const dist = coords && shop.lat != null && shop.lng != null
-            ? haversineDistance(coords, { lat: shop.lat, lng: shop.lng })
-            : null;
+          const shopLL = getShopLatLng(shop, shopCoords);
+          const dist = coords && shopLL ? haversineDistance(coords, shopLL) : null;
           return (
             <ShopCard key={shop.id} shop={shop} distanceKm={dist} isPreferred={preferred.includes(shop.category)} index={i} />
           );
