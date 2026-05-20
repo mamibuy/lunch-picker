@@ -36,7 +36,8 @@ function rowToShop(headers: string[], values: string[], rowNum: number): Shop | 
 
   const name      = get('店名');
   const category  = get('分類');
-  const address   = get('地址');
+  // D 欄：地址（先試標題，再用位置 index 3 備援）
+  const address   = get('地址') || (values[3] ?? '').trim();
   // H 欄：支援多種標題名稱（特約內容 / 優惠資訊 / 特約優惠）
   const deal      = get('特約內容') || get('優惠資訊') || get('特約優惠');
   const visible   = get('是否顯示');
@@ -72,7 +73,11 @@ function rowToShop(headers: string[], values: string[], rowNum: number): Shop | 
     category: category as Category,
     description:  get('介紹')    || undefined,
     address,
-    mapUrl:       get('地圖連結') || undefined,
+    // E 欄：地圖連結（先試多種標題，再用位置 index 4 備援，限 http 開頭）
+    mapUrl: get('地圖連結') || get('Google連結') || get('地標連結') || get('Google地圖') || (() => {
+      const colE = (values[4] ?? '').trim();
+      return colE.startsWith('http') ? colE : '';
+    })() || undefined,
     phone:        get('電話')     || undefined,
     priceRange:   (['$', '$$', '$$$'].includes(priceRaw) ? priceRaw : undefined) as PriceRange | undefined,
     deal: deal || undefined,
