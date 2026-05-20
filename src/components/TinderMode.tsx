@@ -230,96 +230,98 @@ export default function TinderMode({ shops, onClose }: { shops: Shop[]; onClose:
 
   // ── 滑動中 ────────────────────────────────────────────────────────────────
   if (phase === 'swiping') return (
-    <div className="fixed inset-0 bg-orange-50 z-40 flex flex-col">
+    <div className="fixed inset-0 bg-orange-50 z-40 flex flex-col items-center">
       {confetti && <Confetti />}
 
-      {/* 頂列 */}
-      <div className="flex items-center justify-between px-4 pt-10 pb-3">
-        <button onClick={onClose} className="text-stone-400 text-sm font-semibold active:opacity-60 transition-opacity">
-          ✕ 關閉
-        </button>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-stone-400 font-medium">口袋名單</span>
-          <div className="flex gap-1.5">
-            {Array.from({ length: MAX_LIKED }).map((_, i) => (
-              <motion.button
-                key={i}
-                onClick={() => i < liked.length && setLiked(liked.filter((__, idx) => idx !== i))}
-                className={`w-7 h-7 rounded-full flex items-center justify-center text-sm ${
-                  i < liked.length ? 'bg-orange-500 active:scale-90' : 'bg-stone-200'
-                }`}
-                animate={i < liked.length ? { scale: [1, 1.4, 1] } : {}}
-                transition={{ duration: 0.3 }}
-              >
-                {i < liked.length ? '❤️' : ''}
-              </motion.button>
-            ))}
+      <div className="w-full max-w-lg flex flex-col flex-1">
+        {/* 頂列 */}
+        <div className="flex items-center justify-between px-4 pt-10 pb-3">
+          <button onClick={onClose} className="text-stone-400 text-sm font-semibold active:opacity-60 transition-opacity">
+            ✕ 關閉
+          </button>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-stone-400 font-medium">口袋名單</span>
+            <div className="flex gap-1.5">
+              {Array.from({ length: MAX_LIKED }).map((_, i) => (
+                <motion.button
+                  key={i}
+                  onClick={() => i < liked.length && setLiked(liked.filter((__, idx) => idx !== i))}
+                  className={`w-7 h-7 rounded-full flex items-center justify-center text-sm ${
+                    i < liked.length ? 'bg-orange-500 active:scale-90' : 'bg-stone-200'
+                  }`}
+                  animate={i < liked.length ? { scale: [1, 1.4, 1] } : {}}
+                  transition={{ duration: 0.3 }}
+                >
+                  {i < liked.length ? '❤️' : ''}
+                </motion.button>
+              ))}
+            </div>
+            <span className="text-xs text-stone-400 font-medium">{liked.length}/{MAX_LIKED}</span>
           </div>
-          <span className="text-xs text-stone-400 font-medium">{liked.length}/{MAX_LIKED}</span>
-        </div>
-        <motion.button
-          whileTap={{ scale: 0.88 }}
-          onClick={() => setPhase('picking')}
-          disabled={liked.length === 0}
-          className="flex items-center gap-1 text-xs font-bold text-orange-500 disabled:opacity-20 active:opacity-60 transition-opacity"
-        >
-          <span>進入抉擇</span><span>➡️</span>
-        </motion.button>
-      </div>
-
-      {/* 卡片區 */}
-      <div className="flex-1 relative mx-4 my-2">
-        {remaining.slice(0, 3).reverse().map((shop, revIdx) => {
-          const stackIndex = (Math.min(remaining.length, 3) - 1) - revIdx;
-          return (
-            <SwipeCard
-              key={shop.id}
-              ref={stackIndex === 0 ? cardRef : undefined}
-              shop={shop}
-              onSwipe={handleSwipe}
-              stackIndex={stackIndex}
-            />
-          );
-        })}
-        {remaining.length === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center text-stone-300 text-lg font-bold">
-            沒有更多了
-          </div>
-        )}
-      </div>
-
-      {/* 底部按鈕 */}
-      <div className="flex flex-col items-center pb-10 pt-2 px-4 gap-3">
-        <div className="flex justify-center items-center gap-6">
           <motion.button
             whileTap={{ scale: 0.88 }}
-            onClick={() => cardRef.current?.swipe('left')}
-            disabled={remaining.length === 0}
-            className="w-16 h-16 rounded-full bg-white shadow-lg shadow-stone-900/10 flex items-center justify-center text-2xl disabled:opacity-30 border border-stone-100"
+            onClick={() => setPhase('picking')}
+            disabled={liked.length === 0}
+            className="flex items-center gap-1 text-xs font-bold text-orange-500 disabled:opacity-20 active:opacity-60 transition-opacity"
           >
-            ❌
-          </motion.button>
-
-          {/* 星星：直接進入此店頁面 */}
-          <motion.button
-            whileTap={{ scale: 0.88 }}
-            onClick={() => goToShop(remaining[0].id)}
-            disabled={remaining.length === 0}
-            className="w-14 h-14 rounded-full bg-orange-400 shadow-lg shadow-orange-400/30 flex items-center justify-center text-2xl disabled:opacity-30"
-          >
-            ⭐
-          </motion.button>
-
-          <motion.button
-            whileTap={{ scale: 0.88 }}
-            onClick={() => cardRef.current?.swipe('right')}
-            disabled={remaining.length === 0 || liked.length >= MAX_LIKED}
-            className="w-16 h-16 rounded-full bg-orange-500 shadow-lg shadow-orange-500/30 flex items-center justify-center text-2xl disabled:opacity-30"
-          >
-            💖
+            <span>進入抉擇</span><span>➡️</span>
           </motion.button>
         </div>
-        <p className="text-xs text-stone-400 font-medium">❌ 跳過 · ⭐ 就是這家 · 💖 加入口袋</p>
+
+        {/* 卡片區 — 限制最大高度，避免電腦版過度延伸 */}
+        <div className="flex-1 relative mx-4 my-2" style={{ maxHeight: '460px' }}>
+          {remaining.slice(0, 3).reverse().map((shop, revIdx) => {
+            const stackIndex = (Math.min(remaining.length, 3) - 1) - revIdx;
+            return (
+              <SwipeCard
+                key={shop.id}
+                ref={stackIndex === 0 ? cardRef : undefined}
+                shop={shop}
+                onSwipe={handleSwipe}
+                stackIndex={stackIndex}
+              />
+            );
+          })}
+          {remaining.length === 0 && (
+            <div className="absolute inset-0 flex items-center justify-center text-stone-300 text-lg font-bold">
+              沒有更多了
+            </div>
+          )}
+        </div>
+
+        {/* 底部按鈕 — pb-24 避免被底部 menu bar 遮住 */}
+        <div className="flex flex-col items-center pb-24 pt-2 px-4 gap-3">
+          <div className="flex justify-center items-center gap-6">
+            <motion.button
+              whileTap={{ scale: 0.88 }}
+              onClick={() => cardRef.current?.swipe('left')}
+              disabled={remaining.length === 0}
+              className="w-16 h-16 rounded-full bg-white shadow-lg shadow-stone-900/10 flex items-center justify-center text-2xl disabled:opacity-30 border border-stone-100"
+            >
+              ❌
+            </motion.button>
+
+            {/* 星星：直接進入此店頁面 */}
+            <motion.button
+              whileTap={{ scale: 0.88 }}
+              onClick={() => goToShop(remaining[0].id)}
+              disabled={remaining.length === 0}
+              className="w-14 h-14 rounded-full bg-orange-400 shadow-lg shadow-orange-400/30 flex items-center justify-center text-2xl disabled:opacity-30"
+            >
+              ⭐
+            </motion.button>
+
+            <motion.button
+              whileTap={{ scale: 0.88 }}
+              onClick={() => cardRef.current?.swipe('right')}
+              disabled={remaining.length === 0 || liked.length >= MAX_LIKED}
+              className="w-16 h-16 rounded-full bg-orange-500 shadow-lg shadow-orange-500/30 flex items-center justify-center text-2xl disabled:opacity-30"
+            >
+              💖
+            </motion.button>
+          </div>
+          <p className="text-xs text-stone-400 font-medium">❌ 跳過 · ⭐ 就是這家 · 💖 加入口袋</p>
+        </div>
       </div>
     </div>
   );
