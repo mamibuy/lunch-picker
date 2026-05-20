@@ -4,24 +4,29 @@ import { Shop, Category, PriceRange, ALL_CATEGORIES } from './shops';
 // 處理 Google Sheets 匯出的 CSV（欄位值如有逗號會被雙引號包住）
 function parseCSV(text: string): string[][] {
   const rows: string[][] = [];
-  for (const line of text.split('\n')) {
-    if (!line.trim()) continue;
-    const cells: string[] = [];
-    let cur = '';
-    let inQuote = false;
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i];
-      if (ch === '"') {
-        if (inQuote && line[i + 1] === '"') { cur += '"'; i++; }
-        else inQuote = !inQuote;
-      } else if (ch === ',' && !inQuote) {
-        cells.push(cur.trim()); cur = '';
-      } else {
-        cur += ch;
-      }
+  let cells: string[] = [];
+  let cur = '';
+  let inQuote = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '"') {
+      if (inQuote && text[i + 1] === '"') { cur += '"'; i++; }
+      else inQuote = !inQuote;
+    } else if (ch === ',' && !inQuote) {
+      cells.push(cur.trim()); cur = '';
+    } else if ((ch === '\n' || ch === '\r') && !inQuote) {
+      if (ch === '\r' && text[i + 1] === '\n') i++;
+      cells.push(cur.trim());
+      if (cells.some(c => c)) rows.push(cells);
+      cells = []; cur = '';
+    } else {
+      cur += ch;
     }
+  }
+  if (cur.trim() || cells.length > 0) {
     cells.push(cur.trim());
-    rows.push(cells);
+    if (cells.some(c => c)) rows.push(cells);
   }
   return rows;
 }
