@@ -98,64 +98,6 @@ function CardStars({ gold = false }: { gold?: boolean }) {
   );
 }
 
-// ── 插畫：翻牌模式卡牌 ──────────────────────────────────────────
-function PlayingCardsIllustration() {
-  return (
-    <svg width="140" height="140" viewBox="-8 0 96 88" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* 問號卡（後方，旋轉）— 移除內框描邊，只留卡片本體 */}
-      <g transform="rotate(-14, 26, 52)">
-        <rect x="2" y="18" width="47" height="62" rx="8" fill="white" opacity="0.85"/>
-        <text x="25.5" y="54" textAnchor="middle" fontSize="22" fill="#FF5B5B" opacity="0.5" fontWeight="bold" fontFamily="Georgia, serif">?</text>
-      </g>
-
-      {/* 餐具卡（前方） */}
-      <rect x="30" y="5" width="52" height="70" rx="9" fill="white"/>
-      <circle cx="56" cy="36" r="16" fill="#FFF0EB" stroke="#FF7A45" strokeWidth="1.6"/>
-
-      {/* 叉子（左）：2條叉齒 + 弧形底座 + 把手 */}
-      <rect x="46"  y="23" width="2.5" height="11" rx="1.2" fill="#FF7A45"/>
-      <rect x="51.5" y="23" width="2.5" height="11" rx="1.2" fill="#FF7A45"/>
-      <path d="M46 34 L46 37 Q50 41 54 37 L54 34 Z" fill="#FF7A45"/>
-      <rect x="47.5" y="37" width="4.5" height="11" rx="2.2" fill="#FF7A45"/>
-
-      {/* 刀子（右）：刀身（直邊左、弧邊右）+ 把手 */}
-      <path d="M61.5 23 L61.5 37 L65 37 Q67.5 30 65 23 Z" fill="#FF7A45"/>
-      <rect x="61.5" y="37" width="3.5" height="11" rx="1.8" fill="#FF7A45"/>
-
-      {/* 裝飾星星 */}
-      <path d="M14,8 L15.2,12.2 L19.5,13 L15.2,13.8 L14,18 L12.8,13.8 L8.5,13 L12.8,12.2 Z" fill="white" opacity="0.9"/>
-      <path d="M78,60 L79,62.8 L81.8,63.5 L79,64.2 L78,67 L77,64.2 L74.2,63.5 L77,62.8 Z" fill="white" opacity="0.7"/>
-      <circle cx="18" cy="60" r="2.5" fill="white" opacity="0.6"/>
-    </svg>
-  );
-}
-
-// ── 插畫：幫我決定骰子 ──────────────────────────────────────────
-function DiceIllustration() {
-  return (
-    <svg width="140" height="140" viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <polygon points="44,8 76,26 44,44 12,26" fill="#FFE566"/>
-      <polygon points="44,8 60,17 44,26 28,17" fill="#FFF5A0" opacity="0.55"/>
-      <polygon points="12,26 44,44 44,78 12,60" fill="#E49020"/>
-      <polygon points="12,26 28,35 28,52 12,43" fill="#F0A832" opacity="0.5"/>
-      <polygon points="76,26 44,44 44,78 76,60" fill="#F5A828"/>
-      <polyline points="44,8 76,26 44,44 12,26 44,8" stroke="white" strokeWidth="1.2" opacity="0.45" fill="none"/>
-      <line x1="44" y1="44" x2="44" y2="78" stroke="white" strokeWidth="1" opacity="0.28"/>
-      <line x1="12" y1="26" x2="12" y2="60" stroke="white" strokeWidth="1" opacity="0.28"/>
-      <line x1="76" y1="26" x2="76" y2="60" stroke="white" strokeWidth="1" opacity="0.28"/>
-      <circle cx="35" cy="25" r="3.5" fill="white" opacity="0.92"/>
-      <circle cx="53" cy="29" r="3.5" fill="white" opacity="0.92"/>
-      <circle cx="62" cy="50" r="3" fill="#B07010" opacity="0.72"/>
-      <circle cx="66" cy="58" r="3" fill="#B07010" opacity="0.72"/>
-      <circle cx="62" cy="66" r="3" fill="#B07010" opacity="0.72"/>
-      <circle cx="28" cy="53" r="3" fill="#C88010" opacity="0.65"/>
-      <line x1="44" y1="8" x2="76" y2="26" stroke="white" strokeWidth="2.5" opacity="0.55" strokeLinecap="round"/>
-      <path d="M10,14 L11.2,17.8 L15,18.5 L11.2,19.2 L10,23 L8.8,19.2 L5,18.5 L8.8,17.8 Z" fill="white" opacity="0.85"/>
-      <path d="M80,56 L81,58.5 L83.5,59 L81,59.5 L80,62 L79,59.5 L76.5,59 L79,58.5 Z" fill="white" opacity="0.65"/>
-      <circle cx="82" cy="16" r="2.5" fill="white" opacity="0.65"/>
-    </svg>
-  );
-}
 
 export default function ShopList({ shops }: { shops: Shop[] }) {
   const [activeCategory, setActiveCategory] = useState<FilterLabel>('全部');
@@ -349,8 +291,8 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
           </svg>
 
           {/* 插圖 */}
-          <div className="absolute pointer-events-none" style={{ bottom: '-6px', right: '-10px', transform: 'rotate(-8deg)' }}>
-            <PlayingCardsIllustration />
+          <div className="absolute pointer-events-none" style={{ bottom: '-10px', right: '-10px', width: '160px', height: '160px', transform: 'rotate(-5deg)', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.25))' }}>
+            <img src="/images/cards.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
 
           {/* 文字內容 */}
@@ -393,8 +335,8 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
             <path d="M8 122 Q55 75 140 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.45"/>
           </svg>
 
-          <div className="absolute pointer-events-none" style={{ bottom: '-6px', right: '-10px', transform: 'rotate(8deg)' }}>
-            <DiceIllustration />
+          <div className="absolute pointer-events-none" style={{ bottom: '20px', right: '10px', width: '140px', height: '140px', transform: 'rotate(-8deg)', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.25))' }}>
+            <img src="/images/dice.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
 
           <div className="relative p-5" style={{ zIndex: 10 }}>
