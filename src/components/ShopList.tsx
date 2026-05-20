@@ -292,7 +292,7 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
 
           {/* 插圖 */}
           <div className="absolute pointer-events-none" style={{ bottom: '-10px', right: '-10px', width: '160px', height: '160px', transform: 'rotate(-5deg)', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.25))' }}>
-            <img src="/images/cards.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            <img src="/images/tinder模式.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
 
           {/* 文字內容 */}
@@ -336,7 +336,7 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
           </svg>
 
           <div className="absolute pointer-events-none" style={{ bottom: '20px', right: '10px', width: '140px', height: '140px', transform: 'rotate(-8deg)', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.25))' }}>
-            <img src="/images/dice.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            <img src="/images/隨便模式.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
 
           <div className="relative p-5" style={{ zIndex: 10 }}>
