@@ -178,7 +178,13 @@ export default function TinderMode({ shops, onClose }: { shops: Shop[]; onClose:
   const [winner, setWinner]       = useState<Shop | null>(null);
   const [rollingShop, setRollingShop] = useState<Shop | null>(null);
   const [confetti, setConfetti]   = useState(false);
+  const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
   const cardRef = useRef<CardHandle>(null);
+
+  function goToShop(id: string) {
+    setNavigatingTo(id);
+    router.push(`/shop/${id}`);
+  }
 
   function handleSwipe(dir: 'left' | 'right') {
     const top = remaining[0];
@@ -297,7 +303,7 @@ export default function TinderMode({ shops, onClose }: { shops: Shop[]; onClose:
           {/* 星星：直接進入此店頁面 */}
           <motion.button
             whileTap={{ scale: 0.88 }}
-            onClick={() => { onClose(); router.push(`/shop/${remaining[0].id}`); }}
+            onClick={() => goToShop(remaining[0].id)}
             disabled={remaining.length === 0}
             className="w-14 h-14 rounded-full bg-orange-400 shadow-lg shadow-orange-400/30 flex items-center justify-center text-2xl disabled:opacity-30"
           >
@@ -347,18 +353,26 @@ export default function TinderMode({ shops, onClose }: { shops: Shop[]; onClose:
         {/* 三張候選卡 */}
         <div className="flex gap-3 justify-center mb-8">
           {liked.map((s, i) => (
-            <motion.div
+            <motion.button
               key={s.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.12 }}
-              className={`flex-1 bg-white rounded-2xl p-3 shadow-sm shadow-orange-900/10 flex flex-col items-center gap-1 ${
+              whileTap={{ scale: 0.93 }}
+              disabled={phase === 'rolling'}
+              onClick={() => goToShop(s.id)}
+              className={`flex-1 bg-white rounded-2xl p-3 shadow-sm shadow-orange-900/10 flex flex-col items-center gap-1 active:bg-orange-50 transition-colors disabled:opacity-60 ${
                 phase === 'rolling' && rollingShop?.id === s.id ? 'ring-2 ring-orange-400' : ''
               }`}
             >
               <span className="text-3xl">{CATEGORY_EMOJI[s.category]}</span>
               <span className="text-xs font-bold text-stone-700 text-center leading-tight">{s.name}</span>
-            </motion.div>
+              {phase === 'picking' && (
+                navigatingTo === s.id
+                  ? <span className="text-[10px] text-orange-500 font-semibold mt-0.5 animate-pulse">載入中...</span>
+                  : <span className="text-[10px] text-orange-500 font-semibold mt-0.5">就這家 ›</span>
+              )}
+            </motion.button>
           ))}
         </div>
 
@@ -425,7 +439,7 @@ export default function TinderMode({ shops, onClose }: { shops: Shop[]; onClose:
           </motion.button>
           <motion.button
             whileTap={{ scale: 0.95 }}
-            onClick={() => { onClose(); router.push(`/shop/${winner.id}`); }}
+            onClick={() => goToShop(winner.id)}
             className="flex-1 bg-orange-500 text-white font-bold py-3.5 rounded-2xl shadow-sm text-sm"
           >
             ✓ 就這家！
