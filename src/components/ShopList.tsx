@@ -13,6 +13,10 @@ const TinderMode = dynamic(() => import('./TinderMode'), { ssr: false });
 
 const FILTER_LABELS = ['全部', ...ALL_CATEGORIES] as const;
 type FilterLabel = (typeof FILTER_LABELS)[number];
+type SortMode = 'default' | 'distance' | 'badge';
+
+const BADGE_ORDER: Record<string, number> = { '特約店家': 1, '活動優惠': 2, '附近店家': 3 };
+function badgePriority(b: string | undefined) { return BADGE_ORDER[b ?? ''] ?? 4; }
 
 type LocationState =
   | { status: 'none' }
@@ -26,15 +30,33 @@ const GPS_LOADING_MSGS = [
   '計算步行幾步會餓昏...',
 ];
 
-function sortShops(shops: Shop[], coords: LatLng | null, preferred: Category[]): Shop[] {
-  return [...shops]
-    .map((s) => ({
-      shop: s,
-      dist: coords && s.lat != null && s.lng != null
-        ? haversineDistance(coords, { lat: s.lat, lng: s.lng })
-        : null,
-      isPreferred: preferred.includes(s.category),
-    }))
+function sortShops(shops: Shop[], coords: LatLng | null, preferred: Category[], mode: SortMode): Shop[] {
+  const withDist = shops.map((s) => ({
+    shop: s,
+    dist: coords && s.lat != null && s.lng != null
+      ? haversineDistance(coords, { lat: s.lat, lng: s.lng })
+      : null,
+    isPreferred: preferred.includes(s.category),
+  }));
+
+  if (mode === 'distance' && coords) {
+    return withDist
+      .filter((m) => m.dist != null)
+      .sort((a, b) => (a.dist ?? 0) - (b.dist ?? 0))
+      .slice(0, 20)
+      .map((m) => m.shop);
+  }
+
+  if (mode === 'badge' && coords) {
+    return withDist
+      .filter((m) => m.dist != null)
+      .sort((a, b) => (a.dist ?? 0) - (b.dist ?? 0))
+      .slice(0, 20)
+      .sort((a, b) => badgePriority(a.shop.badgeType) - badgePriority(b.shop.badgeType))
+      .map((m) => m.shop);
+  }
+
+  return withDist
     .sort((a, b) => {
       if (a.isPreferred !== b.isPreferred) return a.isPreferred ? -1 : 1;
       if (a.dist != null && b.dist != null) return a.dist - b.dist;
@@ -137,6 +159,7 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
   const [draftAny, setDraftAny] = useState(false);
 
   const [tinderOpen, setTinderOpen] = useState(false);
+  const [sortMode, setSortMode] = useState<SortMode>('default');
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -169,7 +192,15 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
 
   const categorised = activeCategory === '全部' ? shops : shops.filter((s) => s.category === activeCategory);
   const coords = location.status === 'set' ? location.coords : null;
-  const sorted = sortShops(categorised, coords, preferAny ? [] : preferred);
+  const sorted = sortShops(categorised, coords, preferAny ? [] : preferred, sortMode);
+
+  function activateSortMode(mode: SortMode) {
+    if (mode !== 'default' && location.status !== 'set') {
+      setShowLocationPanel(true);
+      return;
+    }
+    setSortMode(mode);
+  }
 
   function pickRandom() {
     if (isRolling) return;
@@ -368,6 +399,38 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
         </button>
       </div>
 
+      {/* ── 排序模式 ── */}
+      <div className="flex gap-2 mb-4">
+        {([
+          { mode: 'distance' as SortMode, icon: '📍', label: '距離排序', desc: '由近到遠前20名' },
+          { mode: 'badge'    as SortMode, icon: '🏷️', label: '店家屬性', desc: '特約 › 活動 › 附近' },
+        ] as const).map(({ mode, icon, label, desc }) => {
+          const active = sortMode === mode;
+          return (
+            <button
+              key={mode}
+              onClick={() => activateSortMode(mode)}
+              className="flex-1 flex items-center gap-2 rounded-[18px] px-3 py-2.5 transition-all duration-150 active:scale-95"
+              style={active
+                ? { background: '#FF7A45', boxShadow: '0 3px 12px rgba(255,122,69,0.35)' }
+                : { background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', border: '1.5px solid #EEE' }}
+            >
+              <span style={{ fontSize: '16px' }}>{icon}</span>
+              <div className="text-left min-w-0">
+                <div className="font-bold text-xs leading-none mb-0.5" style={{ color: active ? 'white' : '#333' }}>{label}</div>
+                <div style={{ fontSize: '10px', color: active ? 'rgba(255,255,255,0.8)' : '#999' }}>{desc}</div>
+              </div>
+              {active && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setSortMode('default'); }}
+                  className="ml-auto text-white opacity-70 hover:opacity-100 text-xs font-bold flex-shrink-0"
+                >✕</button>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
       {/* ── 偏好面板 ── */}
       {showPrefPanel && (
         <div className="bg-white rounded-[24px] p-4 mb-4 animate-fade-in-up" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.09)' }}>
@@ -476,8 +539,14 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
         ))}
       </div>
 
-      {/* 口味符合提示 */}
-      {!preferAny && preferred.length > 0 && activeCategory === '全部' && sorted.some((s) => preferred.includes(s.category)) && (
+      {/* 口味符合提示 / 排序說明 */}
+      {sortMode === 'distance' && coords && (
+        <p className="text-xs text-stone-400 mb-3 px-1">📍 依距離由近到遠，顯示最近 20 家</p>
+      )}
+      {sortMode === 'badge' && coords && (
+        <p className="text-xs text-stone-400 mb-3 px-1">🏷️ 距離最近 20 家，依特約店家 › 活動優惠 › 附近店家排列</p>
+      )}
+      {sortMode === 'default' && !preferAny && preferred.length > 0 && activeCategory === '全部' && sorted.some((s) => preferred.includes(s.category)) && (
         <p className="text-xs text-stone-400 mb-3 px-1">❤️ 你喜歡的口味排在前面</p>
       )}
 
