@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { Shop, Category, ALL_CATEGORIES } from '@/lib/shops';
-import { LatLng, haversineDistance, geocodeAddress, geocodeAddressOnce, formatDistance } from '@/lib/geo';
 import { loadPreferences, savePreferences, loadPreferAny, savePreferAny, MAX_PREFERENCES } from '@/lib/preferences';
 import { CategoryIcon } from './CategoryIcon';
 import ShopCard from './ShopCard';
@@ -13,62 +12,21 @@ const TinderMode = dynamic(() => import('./TinderMode'), { ssr: false });
 
 const FILTER_LABELS = ['全部', ...ALL_CATEGORIES] as const;
 type FilterLabel = (typeof FILTER_LABELS)[number];
-type SortMode = 'default' | 'distance' | 'badge';
+type SortMode = 'default' | 'badge';
 
 const BADGE_ORDER: Record<string, number> = { '特約店家': 1, '活動優惠': 2, '附近店家': 3 };
 function badgePriority(b: string | undefined) { return BADGE_ORDER[b ?? ''] ?? 4; }
 
-type LocationState =
-  | { status: 'none' }
-  | { status: 'loading' }
-  | { status: 'set'; coords: LatLng; label: string }
-  | { status: 'error'; message: string };
-
-const GPS_LOADING_MSGS = [
-  '正在通靈附近的便當店...',
-  '詢問衛星你在哪裡覓食...',
-  '計算步行幾步會餓昏...',
-];
-
-function getShopLatLng(s: Shop, cached: Record<string, LatLng>): LatLng | null {
-  if (s.lat != null && s.lng != null) return { lat: s.lat, lng: s.lng };
-  return cached[s.id] ?? null;
-}
-
-function sortShops(shops: Shop[], coords: LatLng | null, preferred: Category[], mode: SortMode, cached: Record<string, LatLng>): Shop[] {
-  const withDist = shops.map((s) => ({
-    shop: s,
-    dist: coords ? (() => { const ll = getShopLatLng(s, cached); return ll ? haversineDistance(coords, ll) : null; })() : null,
-    isPreferred: preferred.includes(s.category),
-  }));
-
-  const withCoords = withDist.filter((m) => m.dist != null);
-  const hasCoords  = withCoords.length > 0;
-
-  if (mode === 'distance') {
-    if (!coords || !hasCoords) return withDist.map((m) => m.shop);
-    return withCoords
-      .sort((a, b) => (a.dist ?? 0) - (b.dist ?? 0))
-      .slice(0, 20)
-      .map((m) => m.shop);
-  }
-
+function sortShops(shops: Shop[], preferred: Category[], mode: SortMode): Shop[] {
   if (mode === 'badge') {
-    const base = coords && hasCoords
-      ? withCoords.sort((a, b) => (a.dist ?? 0) - (b.dist ?? 0)).slice(0, 20)
-      : withDist;
-    return [...base]
-      .sort((a, b) => badgePriority(a.shop.badgeType) - badgePriority(b.shop.badgeType))
-      .map((m) => m.shop);
+    return [...shops].sort((a, b) => badgePriority(a.badgeType) - badgePriority(b.badgeType));
   }
-
-  return withDist
-    .sort((a, b) => {
-      if (a.isPreferred !== b.isPreferred) return a.isPreferred ? -1 : 1;
-      if (a.dist != null && b.dist != null) return a.dist - b.dist;
-      return (a.shop.walkMinutes ?? 99) - (b.shop.walkMinutes ?? 99);
-    })
-    .map((m) => m.shop);
+  return [...shops].sort((a, b) => {
+    const ap = preferred.includes(a.category);
+    const bp = preferred.includes(b.category);
+    if (ap !== bp) return ap ? -1 : 1;
+    return 0;
+  });
 }
 
 // ── 星星裝飾 ────────────────────────────────────────────────────
@@ -164,11 +122,6 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
   const [rollingName, setRollingName] = useState('');
   const [slotKey, setSlotKey] = useState(0);
 
-  const [location, setLocation] = useState<LocationState>({ status: 'none' });
-  const [showLocationPanel, setShowLocationPanel] = useState(false);
-  const [addressInput, setAddressInput] = useState('');
-  const [gpsMsg, setGpsMsg] = useState(GPS_LOADING_MSGS[0]);
-
   const [preferred, setPreferred] = useState<Category[]>([]);
   const [preferAny, setPreferAny] = useState(false);
   const [showPrefPanel, setShowPrefPanel] = useState(false);
@@ -178,52 +131,11 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
   const [tinderOpen, setTinderOpen] = useState(false);
   const [sortMode, setSortMode] = useState<SortMode>('default');
   const [showSortDropdown, setShowSortDropdown] = useState(false);
-  const [shopCoords, setShopCoords] = useState<Record<string, LatLng>>({});
-  const [geocodingTotal, setGeocodingTotal] = useState(0);
-
-  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setPreferred(loadPreferences());
     setPreferAny(loadPreferAny());
-    try {
-      const cached = localStorage.getItem('lp-shop-geo');
-      if (cached) setShopCoords(JSON.parse(cached));
-    } catch {}
   }, []);
-
-  // 定位設定後，自動 geocode 沒有座標的店家（結果存 localStorage）
-  useEffect(() => {
-    if (location.status !== 'set') return;
-
-    let cachedNow: Record<string, LatLng> = {};
-    try { const s = localStorage.getItem('lp-shop-geo'); if (s) cachedNow = JSON.parse(s); } catch {}
-
-    const toGeocode = shops.filter(s => s.lat == null && s.lng == null && s.address && !cachedNow[s.id]);
-    if (toGeocode.length === 0) return;
-
-    setGeocodingTotal(toGeocode.length);
-    let cancelled = false;
-    const updated = { ...cachedNow };
-
-    (async () => {
-      for (const shop of toGeocode) {
-        if (cancelled) break;
-        try {
-          const c = await geocodeAddressOnce(shop.address);
-          if (!c) { if (!cancelled) await new Promise(r => setTimeout(r, 1500)); continue; }
-          updated[shop.id] = c;
-          setShopCoords({ ...updated });
-          localStorage.setItem('lp-shop-geo', JSON.stringify(updated));
-        } catch {}
-        if (!cancelled) await new Promise(r => setTimeout(r, 1500));
-      }
-      setGeocodingTotal(0);
-    })();
-
-    return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.status]);
 
   function openPrefPanel() {
     setDraftPref(preferred);
@@ -248,16 +160,7 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
   }
 
   const categorised = activeCategory === '全部' ? shops : shops.filter((s) => s.category === activeCategory);
-  const coords = location.status === 'set' ? location.coords : null;
-  const sorted = sortShops(categorised, coords, preferAny ? [] : preferred, sortMode, shopCoords);
-
-  function activateSortMode(mode: SortMode) {
-    if (mode !== 'default' && location.status !== 'set') {
-      setShowLocationPanel(true);
-      return;
-    }
-    setSortMode(mode);
-  }
+  const sorted = sortShops(categorised, preferAny ? [] : preferred, sortMode);
 
   function pickRandom() {
     if (isRolling) return;
@@ -284,44 +187,6 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
       }
     }, 110);
   }
-
-  function useGps() {
-    setLocation({ status: 'loading' });
-    let msgIdx = 0;
-    const msgTimer = setInterval(() => {
-      msgIdx = (msgIdx + 1) % GPS_LOADING_MSGS.length;
-      setGpsMsg(GPS_LOADING_MSGS[msgIdx]);
-    }, 1200);
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        clearInterval(msgTimer);
-        setLocation({ status: 'set', coords: { lat: pos.coords.latitude, lng: pos.coords.longitude }, label: '目前位置' });
-        setShowLocationPanel(false);
-      },
-      () => {
-        clearInterval(msgTimer);
-        setLocation({ status: 'error', message: '無法取得 GPS，請確認已允許定位權限' });
-      },
-    );
-  }
-
-  async function useAddress() {
-    const addr = addressInput.trim();
-    if (!addr) return;
-    setLocation({ status: 'loading' });
-    setGpsMsg('查詢地址中，請稍候...');
-    try {
-      const c = await geocodeAddress(addr);
-      setLocation({ status: 'set', coords: c, label: addr });
-      setShowLocationPanel(false);
-      setAddressInput('');
-    } catch (e) {
-      setLocation({ status: 'error', message: e instanceof Error ? e.message : '地址查詢失敗，請再試一次' });
-    }
-  }
-
-  const isLocLoading = location.status === 'loading';
 
   return (
     <div>
@@ -449,9 +314,9 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
       )}
 
       {/* ── 次要功能列 ── */}
-      <div className="flex gap-3 mb-4">
+      <div className="mb-4">
         {/* 我的收藏 */}
-        <button onClick={openPrefPanel} className="flex-1 bg-white rounded-[20px] px-3 py-3 flex items-center gap-2.5 active:scale-95 transition-transform duration-150" style={{ boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}>
+        <button onClick={openPrefPanel} className="w-full bg-white rounded-[20px] px-3 py-3 flex items-center gap-2.5 active:scale-95 transition-transform duration-150" style={{ boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}>
           <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#FFF0F0' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="#FF5B5B">
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
@@ -464,27 +329,6 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
             </div>
           </div>
           <span className="text-stone-300 flex-shrink-0" style={{ fontSize: '18px' }}>›</span>
-        </button>
-
-        {/* 我在哪 */}
-        <button onClick={() => setShowLocationPanel((v) => !v)} className="flex-1 bg-white rounded-[20px] px-3 py-3 flex items-center gap-2.5 active:scale-95 transition-transform duration-150" style={{ boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}>
-          <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#F0FAF0' }}>
-            <svg width="20" height="20" viewBox="0 0 24 24">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" fill="#34C759"/>
-              <circle cx="12" cy="10" r="3.5" fill="white"/>
-            </svg>
-          </div>
-          <div className="flex-1 text-left min-w-0">
-            <div className="font-bold text-stone-800 text-sm">我在哪</div>
-            <div className="text-stone-400 truncate" style={{ fontSize: '11px' }}>
-              {location.status === 'set' ? location.label : '定位獲取距離'}
-            </div>
-          </div>
-          {location.status === 'set' ? (
-            <span onClick={(e) => { e.stopPropagation(); setLocation({ status: 'none' }); }} className="text-stone-300 text-sm hover:text-red-400 transition-colors flex-shrink-0 p-1 cursor-pointer">✕</span>
-          ) : (
-            <span className="text-stone-300 flex-shrink-0" style={{ fontSize: '18px' }}>›</span>
-          )}
         </button>
       </div>
 
@@ -531,45 +375,6 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
         </div>
       )}
 
-      {/* ── 定位面板 ── */}
-      {showLocationPanel && (
-        <div className="bg-white rounded-[24px] p-4 mb-4 flex flex-col gap-3 animate-fade-in-up" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.09)' }}>
-          <button
-            onClick={useGps}
-            disabled={isLocLoading}
-            className="w-full text-white font-bold py-3 rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-transform duration-150 disabled:opacity-70"
-            style={{ background: '#FF7A45' }}
-          >
-            {isLocLoading
-              ? <><span className="animate-bounce">🍱</span><span className="text-sm">{gpsMsg}</span></>
-              : <><span>📡</span><span>使用 GPS 定位（最準確）</span></>
-            }
-          </button>
-          <div className="flex items-center gap-2 text-xs text-stone-400">
-            <div className="flex-1 h-px bg-stone-100"/><span>或手動輸入地址</span><div className="flex-1 h-px bg-stone-100"/>
-          </div>
-          <div className="flex gap-2">
-            <input
-              ref={inputRef}
-              type="text"
-              value={addressInput}
-              onChange={(e) => setAddressInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && useAddress()}
-              placeholder="例：台北市信義區信義路五段7號"
-              disabled={isLocLoading}
-              className="flex-1 border border-stone-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-400 disabled:opacity-60"
-            />
-            <button
-              onClick={useAddress}
-              disabled={isLocLoading || !addressInput.trim()}
-              className="text-white px-4 py-2 rounded-xl text-sm font-bold active:scale-95 transition-transform duration-150 disabled:opacity-40"
-              style={{ background: '#FF7A45' }}
-            >確認</button>
-          </div>
-          {location.status === 'error' && <p className="text-red-400 text-xs">{location.message}</p>}
-        </div>
-      )}
-
       {/* ── 分類篩選 ── */}
       <div className="flex gap-2 overflow-x-auto pb-2 mb-4 no-scrollbar">
         <button
@@ -596,13 +401,6 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
         ))}
       </div>
 
-      {/* 正在 geocode 店家座標 */}
-      {geocodingTotal > 0 && (
-        <p className="text-xs text-stone-400 mb-3 px-1 animate-pulse">
-          📡 正在計算店家距離，請稍候…
-        </p>
-      )}
-
       {/* ── 排序下拉 ── */}
       <div className="relative flex items-center justify-between mb-3">
         <span className="text-xs text-stone-400">{sorted.length} 家</span>
@@ -611,7 +409,7 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
           className="flex items-center gap-1 px-2 py-1 rounded-lg active:bg-stone-100 transition-colors"
         >
           <span className="text-xs font-semibold" style={{ color: sortMode !== 'default' ? '#FF7A45' : '#888' }}>
-            {sortMode === 'distance' ? '📍 距離排序' : sortMode === 'badge' ? '🏷️ 優惠類型' : '排序'}
+            {sortMode === 'badge' ? '🏷️ 優惠類型' : '排序'}
           </span>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={sortMode !== 'default' ? '#FF7A45' : '#AAA'} strokeWidth="2.5" strokeLinecap="round">
             <path d="M6 9l6 6 6-6"/>
@@ -623,13 +421,12 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
             <div className="fixed inset-0 z-10" onClick={() => setShowSortDropdown(false)}/>
             <div className="absolute right-0 top-full mt-1 bg-white rounded-2xl z-20 overflow-hidden" style={{ minWidth: '160px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}>
               {([
-                { mode: 'default'  as SortMode, label: '預設排序' },
-                { mode: 'distance' as SortMode, label: '📍 距離排序' },
-                { mode: 'badge'    as SortMode, label: '🏷️ 優惠類型' },
+                { mode: 'default' as SortMode, label: '預設排序' },
+                { mode: 'badge'   as SortMode, label: '🏷️ 優惠類型' },
               ]).map(({ mode, label }) => (
                 <button
                   key={mode}
-                  onClick={() => { activateSortMode(mode); setShowSortDropdown(false); }}
+                  onClick={() => { setSortMode(mode); setShowSortDropdown(false); }}
                   className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold transition-colors active:bg-orange-50"
                   style={{ color: sortMode === mode ? '#FF7A45' : '#333', borderBottom: '1px solid #F5F5F5' }}
                 >
@@ -649,13 +446,9 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
 
       {/* ── 店家列表 ── */}
       <div className="flex flex-col gap-3 pb-4">
-        {sorted.map((shop, i) => {
-          const shopLL = getShopLatLng(shop, shopCoords);
-          const dist = coords && shopLL ? haversineDistance(coords, shopLL) : null;
-          return (
-            <ShopCard key={shop.id} shop={shop} distanceKm={dist} isPreferred={preferred.includes(shop.category)} index={i} />
-          );
-        })}
+        {sorted.map((shop, i) => (
+          <ShopCard key={shop.id} shop={shop} isPreferred={preferred.includes(shop.category)} index={i} />
+        ))}
         {sorted.length === 0 && (
           <div className="text-center text-stone-400 py-16 text-sm">這個分類還沒有特約店家 🍽️</div>
         )}
