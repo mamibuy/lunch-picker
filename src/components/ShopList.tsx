@@ -68,37 +68,54 @@ function sortShops(shops: Shop[], coords: LatLng | null, preferred: Category[], 
     .map((m) => m.shop);
 }
 
+// ── 星星裝飾 ────────────────────────────────────────────────────
+function CardStars({ gold = false }: { gold?: boolean }) {
+  const stars = [
+    { x: '10%', y: '7%',  s: 9,  o: 0.9 },
+    { x: '78%', y: '5%',  s: 6,  o: 0.7 },
+    { x: '65%', y: '18%', s: 12, o: 0.85 },
+    { x: '14%', y: '48%', s: 5,  o: 0.6 },
+    { x: '46%', y: '9%',  s: 7,  o: 0.75 },
+    { x: '30%', y: '38%', s: 4,  o: 0.65 },
+    { x: '84%', y: '32%', s: 5,  o: 0.7 },
+    { x: '5%',  y: '22%', s: 4,  o: 0.6 },
+    { x: '55%', y: '44%', s: 7,  o: 0.55 },
+    { x: '38%', y: '22%', s: 10, o: 0.8 },
+  ];
+  return (
+    <>
+      {stars.map((p, i) => (
+        <div key={i} className="absolute pointer-events-none select-none" style={{ left: p.x, top: p.y, opacity: p.o }}>
+          <svg width={p.s} height={p.s} viewBox="0 0 24 24" fill={gold && i % 3 === 0 ? '#FFE566' : 'white'}>
+            <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17 5.8 21.3l2.4-7.4L2 9.4h7.6z"/>
+          </svg>
+        </div>
+      ))}
+    </>
+  );
+}
+
 // ── 插畫：翻牌模式卡牌 ──────────────────────────────────────────
 function PlayingCardsIllustration() {
   return (
-    <svg width="88" height="88" viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Back card - rotated left */}
+    <svg width="140" height="140" viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
       <g transform="rotate(-14, 26, 52)">
-        <rect x="2" y="18" width="47" height="62" rx="8" fill="white" opacity="0.82"/>
-        <rect x="5" y="21" width="41" height="56" rx="6" fill="none" stroke="#FF5B5B" strokeWidth="1.2" opacity="0.3"/>
-        <text x="25.5" y="54" textAnchor="middle" fontSize="22" fill="#FF5B5B" opacity="0.45" fontWeight="bold" fontFamily="Georgia, serif">?</text>
+        <rect x="2" y="18" width="47" height="62" rx="8" fill="white" opacity="0.85"/>
+        <rect x="5" y="21" width="41" height="56" rx="6" fill="none" stroke="#FF5B5B" strokeWidth="1.2" opacity="0.35"/>
+        <text x="25.5" y="54" textAnchor="middle" fontSize="22" fill="#FF5B5B" opacity="0.5" fontWeight="bold" fontFamily="Georgia, serif">?</text>
       </g>
-      {/* Front card */}
       <rect x="30" y="5" width="52" height="70" rx="9" fill="white"/>
-      {/* Plate circle */}
       <circle cx="56" cy="36" r="16" fill="#FFF0EB" stroke="#FF7A45" strokeWidth="1.6"/>
-      {/* Fork tines */}
       <line x1="50" y1="28" x2="50" y2="33" stroke="#FF7A45" strokeWidth="1.6" strokeLinecap="round"/>
       <line x1="54" y1="28" x2="54" y2="33" stroke="#FF7A45" strokeWidth="1.6" strokeLinecap="round"/>
       <line x1="58" y1="28" x2="58" y2="33" stroke="#FF7A45" strokeWidth="1.6" strokeLinecap="round"/>
-      {/* Fork base join */}
       <path d="M50 33 Q54 37 58 33 L58 44 Q54 46 50 44 Z" fill="#FF7A45"/>
-      {/* Knife */}
       <line x1="64" y1="28" x2="64" y2="44" stroke="#FF7A45" strokeWidth="1.8" strokeLinecap="round"/>
       <path d="M64 28 Q68 30 68 34 Q68 37 64 37" fill="#FF7A45" stroke="none"/>
-      {/* Card corner mark */}
       <text x="82" y="20" textAnchor="middle" fontSize="10" fill="#FF5B5B" fontWeight="700" fontFamily="Georgia, serif">?</text>
-      {/* Star sparkles around */}
-      <path d="M14,8 L15.2,12.2 L19.5,13 L15.2,13.8 L14,18 L12.8,13.8 L8.5,13 L12.8,12.2 Z" fill="white" opacity="0.8"/>
-      <path d="M78,60 L79,62.8 L81.8,63.5 L79,64.2 L78,67 L77,64.2 L74.2,63.5 L77,62.8 Z" fill="white" opacity="0.6"/>
-      <circle cx="18" cy="60" r="2.5" fill="white" opacity="0.55"/>
-      <circle cx="82" cy="12" r="2" fill="white" opacity="0.6"/>
-      <circle cx="6" cy="35" r="1.8" fill="white" opacity="0.45"/>
+      <path d="M14,8 L15.2,12.2 L19.5,13 L15.2,13.8 L14,18 L12.8,13.8 L8.5,13 L12.8,12.2 Z" fill="white" opacity="0.9"/>
+      <path d="M78,60 L79,62.8 L81.8,63.5 L79,64.2 L78,67 L77,64.2 L74.2,63.5 L77,62.8 Z" fill="white" opacity="0.7"/>
+      <circle cx="18" cy="60" r="2.5" fill="white" opacity="0.6"/>
     </svg>
   );
 }
@@ -106,39 +123,26 @@ function PlayingCardsIllustration() {
 // ── 插畫：幫我決定骰子 ──────────────────────────────────────────
 function DiceIllustration() {
   return (
-    <svg width="88" height="88" viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Top face */}
+    <svg width="140" height="140" viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
       <polygon points="44,8 76,26 44,44 12,26" fill="#FFE566"/>
-      {/* Top face highlight */}
       <polygon points="44,8 60,17 44,26 28,17" fill="#FFF5A0" opacity="0.55"/>
-      {/* Left face */}
       <polygon points="12,26 44,44 44,78 12,60" fill="#E49020"/>
-      {/* Left face highlight */}
       <polygon points="12,26 28,35 28,52 12,43" fill="#F0A832" opacity="0.5"/>
-      {/* Right face */}
       <polygon points="76,26 44,44 44,78 76,60" fill="#F5A828"/>
-      {/* Edge highlights */}
       <polyline points="44,8 76,26 44,44 12,26 44,8" stroke="white" strokeWidth="1.2" opacity="0.45" fill="none"/>
       <line x1="44" y1="44" x2="44" y2="78" stroke="white" strokeWidth="1" opacity="0.28"/>
       <line x1="12" y1="26" x2="12" y2="60" stroke="white" strokeWidth="1" opacity="0.28"/>
       <line x1="76" y1="26" x2="76" y2="60" stroke="white" strokeWidth="1" opacity="0.28"/>
-      {/* Top face dots (2) */}
       <circle cx="35" cy="25" r="3.5" fill="white" opacity="0.92"/>
       <circle cx="53" cy="29" r="3.5" fill="white" opacity="0.92"/>
-      {/* Right face dots (3) */}
       <circle cx="62" cy="50" r="3" fill="#B07010" opacity="0.72"/>
       <circle cx="66" cy="58" r="3" fill="#B07010" opacity="0.72"/>
       <circle cx="62" cy="66" r="3" fill="#B07010" opacity="0.72"/>
-      {/* Left face dot (1) */}
       <circle cx="28" cy="53" r="3" fill="#C88010" opacity="0.65"/>
-      {/* Top edge shine */}
       <line x1="44" y1="8" x2="76" y2="26" stroke="white" strokeWidth="2.5" opacity="0.55" strokeLinecap="round"/>
-      {/* Sparkles */}
-      <path d="M10,14 L11.2,17.8 L15,18.5 L11.2,19.2 L10,23 L8.8,19.2 L5,18.5 L8.8,17.8 Z" fill="white" opacity="0.8"/>
-      <path d="M80,56 L81,58.5 L83.5,59 L81,59.5 L80,62 L79,59.5 L76.5,59 L79,58.5 Z" fill="white" opacity="0.6"/>
-      <circle cx="82" cy="16" r="2.5" fill="white" opacity="0.6"/>
-      <circle cx="8" cy="62" r="2" fill="white" opacity="0.5"/>
-      <circle cx="22" cy="10" r="1.5" fill="white" opacity="0.45"/>
+      <path d="M10,14 L11.2,17.8 L15,18.5 L11.2,19.2 L10,23 L8.8,19.2 L5,18.5 L8.8,17.8 Z" fill="white" opacity="0.85"/>
+      <path d="M80,56 L81,58.5 L83.5,59 L81,59.5 L80,62 L79,59.5 L76.5,59 L79,58.5 Z" fill="white" opacity="0.65"/>
+      <circle cx="82" cy="16" r="2.5" fill="white" opacity="0.65"/>
     </svg>
   );
 }
@@ -274,63 +278,95 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
     <div>
       {/* ── 雙主功能卡 ── */}
       <div className="flex gap-3 mb-4">
-        {/* 翻牌模式 */}
+
+        {/* === 翻牌模式 === */}
         <button
           onClick={() => setTinderOpen(true)}
-          className="flex-1 relative rounded-[26px] overflow-hidden text-left active:scale-95 transition-transform duration-150"
+          className="flex-1 relative rounded-[28px] overflow-hidden text-left active:scale-95 transition-transform duration-150"
           style={{
-            boxShadow: '0 10px 28px rgba(255,91,91,0.48), 0 3px 8px rgba(255,91,91,0.28), inset 0 1px 0 rgba(255,255,255,0.35)',
+            minHeight: '215px',
+            background: 'radial-gradient(circle at 30% 25%, #FF8585 0%, #FF6B6B 42%, #E63946 100%)',
+            boxShadow: '0 8px 24px rgba(255,107,107,0.4), inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -4px 8px rgba(0,0,0,0.1)',
           }}
         >
-          {/* Gradient bg */}
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(145deg, #FF6B6B 0%, #FF5B5B 40%, #FF7A50 100%)' }}/>
-          {/* Inner highlight */}
-          <div className="absolute inset-x-0 top-0 h-14 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.22) 0%, transparent 100%)' }}/>
-          {/* Content */}
-          <div className="relative p-4">
-            {/* Capsule label */}
-            <span className="inline-block text-xs font-black px-3 py-1 rounded-full mb-2.5" style={{ background: '#FFE566', color: '#7A5800', fontSize: '11px' }}>
+          <CardStars />
+
+          {/* 底部光暈 */}
+          <div className="absolute bottom-0 right-0 pointer-events-none" style={{ width: '160px', height: '140px', background: 'radial-gradient(ellipse at 80% 90%, rgba(255,255,255,0.22) 0%, transparent 65%)' }}/>
+
+          {/* 流線軌跡 */}
+          <svg className="absolute bottom-0 right-0 pointer-events-none" width="155" height="130" viewBox="0 0 155 130" fill="none">
+            <path d="M8 122 Q55 75 140 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.45"/>
+          </svg>
+
+          {/* 插圖 */}
+          <div className="absolute pointer-events-none" style={{ bottom: '-6px', right: '-10px', transform: 'rotate(-8deg)' }}>
+            <PlayingCardsIllustration />
+          </div>
+
+          {/* 文字內容 */}
+          <div className="relative p-5" style={{ zIndex: 10 }}>
+            <span className="inline-block mb-2.5" style={{ background: '#FFD93D', color: '#5A3A1A', fontWeight: 900, fontSize: '14px', padding: '6px 16px', borderRadius: '999px', boxShadow: '0 2px 6px rgba(0,0,0,0.15)' }}>
               一起來玩!
             </span>
-            <h3 className="text-white font-black text-xl leading-none mb-1" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.15)' }}>
-              翻牌模式
+            <h3 style={{ fontSize: '36px', fontWeight: 900, color: '#FFFFFF', textShadow: '0 3px 0 rgba(0,0,0,0.15), 0 6px 12px rgba(0,0,0,0.2)', letterSpacing: '2px', lineHeight: 1.05, marginBottom: '8px' }}>
+              翻牌<br/>模式
             </h3>
-            <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.75)' }}>滑卡選出心儀<br/>餐廳</p>
-            {/* Illustration + arrow */}
-            <div className="flex items-end justify-between">
-              <PlayingCardsIllustration />
-              <span className="w-9 h-9 rounded-full bg-white flex items-center justify-center font-bold text-base flex-shrink-0 mb-1" style={{ color: '#FF5B5B', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
-                →
-              </span>
-            </div>
+            <p style={{ fontSize: '14px', fontWeight: 600, color: 'white', opacity: 0.95, lineHeight: 1.7, whiteSpace: 'nowrap' }}>
+              翻開卡牌<br/>探索美味驚喜
+            </p>
+          </div>
+
+          {/* 箭頭按鈕 */}
+          <div className="absolute flex items-center justify-center" style={{ bottom: '16px', right: '16px', zIndex: 20, width: '44px', height: '44px', borderRadius: '50%', background: 'white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E63946" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
           </div>
         </button>
 
-        {/* 幫我決定 */}
+        {/* === 幫我決定 === */}
         <button
           onClick={pickRandom}
           disabled={isRolling}
-          className="flex-1 relative rounded-[26px] overflow-hidden text-left active:scale-95 transition-transform duration-150 disabled:opacity-85"
+          className="flex-1 relative rounded-[28px] overflow-hidden text-left active:scale-95 transition-transform duration-150 disabled:opacity-85"
           style={{
-            boxShadow: '0 10px 28px rgba(255,160,32,0.48), 0 3px 8px rgba(255,144,0,0.28), inset 0 1px 0 rgba(255,255,255,0.35)',
+            minHeight: '215px',
+            background: 'radial-gradient(circle at 30% 25%, #FFCC6B 0%, #FFB547 42%, #F77F00 100%)',
+            boxShadow: '0 8px 24px rgba(247,127,0,0.38), inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -4px 8px rgba(0,0,0,0.1)',
           }}
         >
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(145deg, #FFBE55 0%, #FFB030 40%, #FF9020 100%)' }}/>
-          <div className="absolute inset-x-0 top-0 h-14 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.22) 0%, transparent 100%)' }}/>
-          <div className="relative p-4">
-            <span className="inline-block text-xs font-black px-3 py-1 rounded-full mb-2.5" style={{ background: 'rgba(255,255,255,0.35)', color: 'white', backdropFilter: 'blur(4px)', fontSize: '11px' }}>
+          <CardStars gold />
+
+          <div className="absolute bottom-0 right-0 pointer-events-none" style={{ width: '160px', height: '140px', background: 'radial-gradient(ellipse at 80% 90%, rgba(255,255,255,0.22) 0%, transparent 65%)' }}/>
+
+          <svg className="absolute bottom-0 right-0 pointer-events-none" width="155" height="130" viewBox="0 0 155 130" fill="none">
+            <path d="M8 122 Q55 75 140 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.45"/>
+          </svg>
+
+          <div className="absolute pointer-events-none" style={{ bottom: '-6px', right: '-10px', transform: 'rotate(8deg)' }}>
+            <DiceIllustration />
+          </div>
+
+          <div className="relative p-5" style={{ zIndex: 10 }}>
+            <span className="inline-block mb-2.5" style={{ background: '#FFD93D', color: '#5A3A1A', fontWeight: 900, fontSize: '14px', padding: '6px 16px', borderRadius: '999px', boxShadow: '0 2px 6px rgba(0,0,0,0.15)' }}>
               讓我幫你選!
             </span>
-            <h3 className="text-white font-black text-xl leading-none mb-1" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.12)' }}>
-              幫我決定
+            <h3 style={{ fontSize: '36px', fontWeight: 900, color: '#FFFFFF', textShadow: '0 3px 0 rgba(0,0,0,0.15), 0 6px 12px rgba(0,0,0,0.2)', letterSpacing: '2px', lineHeight: 1.05, marginBottom: '8px' }}>
+              幫我<br/>決定
             </h3>
-            <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.75)' }}>{isRolling ? '轉動中...' : '隨機推薦今日'}<br/>{isRolling ? '' : '午餐'}</p>
-            <div className="flex items-end justify-between">
-              <DiceIllustration />
-              <span className="w-9 h-9 rounded-full bg-white flex items-center justify-center font-bold text-base flex-shrink-0 mb-1" style={{ color: '#FF9020', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
-                {isRolling ? '⏳' : '→'}
-              </span>
-            </div>
+            <p style={{ fontSize: '14px', fontWeight: 600, color: 'white', opacity: 0.95, lineHeight: 1.7, whiteSpace: 'nowrap' }}>
+              {isRolling ? <>轉動中...<br/>&nbsp;</> : <>骰子一擲<br/>隨機選出好店</>}
+            </p>
+          </div>
+
+          <div className="absolute flex items-center justify-center" style={{ bottom: '16px', right: '16px', zIndex: 20, width: '44px', height: '44px', borderRadius: '50%', background: 'white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F77F00" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              {isRolling
+                ? <><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></>
+                : <path d="M5 12h14M12 5l7 7-7 7"/>
+              }
+            </svg>
           </div>
         </button>
       </div>
