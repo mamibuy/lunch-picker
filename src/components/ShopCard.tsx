@@ -130,7 +130,7 @@ export default function ShopCard({
               </div>
             </div>
           ) : shop.description ? (
-            <p className="text-stone-700 line-clamp-2 whitespace-pre-line" style={{ fontSize: '11px' }}>{shop.description}</p>
+            <p className="text-stone-700 whitespace-pre-line" style={{ fontSize: '11px' }}>{shop.description}</p>
           ) : null}
         </div>
       </div>
