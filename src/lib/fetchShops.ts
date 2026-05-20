@@ -37,7 +37,8 @@ function rowToShop(headers: string[], values: string[], rowNum: number): Shop | 
   const name      = get('店名');
   const category  = get('分類');
   const address   = get('地址');
-  const deal      = get('特約內容');
+  // H 欄：支援多種標題名稱（特約內容 / 優惠資訊 / 特約優惠）
+  const deal      = get('特約內容') || get('優惠資訊') || get('特約優惠');
   const visible   = get('是否顯示');
   const badgeRaw  = get('店家標籤');
 
@@ -104,7 +105,7 @@ async function fetchFromSheet(url: string): Promise<Shop[]> {
   dataRows.forEach((row, i) => {
     const shop = rowToShop(headers, row, i + 2); // +2 因為第 1 列是標題
     if (shop) {
-      console.log(`[試算表] 第 ${i + 2} 列：${shop.name} ／ 分類=${shop.category} ／ 標籤=${shop.badgeType}`);
+      console.log(`[試算表] 第 ${i + 2} 列：${shop.name} ／ 分類=${shop.category} ／ 標籤=${shop.badgeType} ／ 優惠=${shop.deal.slice(0, 20)}`);
       shops.push(shop);
     }
   });

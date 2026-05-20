@@ -120,14 +120,14 @@ export default function ShopCard({
             </span>
           </div>
 
-          {/* 特約優惠（淡黃色底） */}
+          {/* 優惠資訊（淡黃色底） */}
           <div className="rounded-xl px-2.5 py-2 flex items-start gap-1.5" style={{ background: '#FFFBEC' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="flex-shrink-0 mt-0.5">
               <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" stroke="#FF7A45" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <line x1="7" y1="7" x2="7.01" y2="7" stroke="#FF7A45" strokeWidth="2.5" strokeLinecap="round"/>
             </svg>
             <div className="min-w-0">
-              <span className="text-xs font-bold" style={{ color: '#FF7A45' }}>特約優惠</span>
+              <span className="text-xs font-bold" style={{ color: '#FF7A45' }}>優惠資訊</span>
               <p className="text-stone-600 mt-0.5 line-clamp-2 whitespace-pre-line" style={{ fontSize: '11px' }}>{shop.deal}</p>
             </div>
           </div>
