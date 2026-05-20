@@ -65,8 +65,15 @@ function rowToShop(headers: string[], values: string[], rowNum: number): Shop | 
     phone:        get('電話')     || undefined,
     priceRange:   (['$', '$$', '$$$'].includes(priceRaw) ? priceRaw : undefined) as PriceRange | undefined,
     deal: deal || '（特約內容待補）',
-    photoUrl:     get('照片連結') || undefined,
-    tags:         tagsRaw ? tagsRaw.split('、').map((t) => t.trim()).filter(Boolean) : undefined,
+    photos: (() => {
+      const list = [
+        get('照片1') || get('照片連結'),
+        ...Array.from({ length: 9 }, (_, i) => get(`照片${i + 2}`)),
+      ].filter(Boolean) as string[];
+      return list.length > 0 ? list : undefined;
+    })(),
+    photoUrl: get('照片1') || get('照片連結') || undefined,
+    tags:         tagsRaw ? tagsRaw.split(/[,，、]/).map((t) => t.trim()).filter(Boolean) : undefined,
     visible:      true,
     lat:          isNaN(lat) ? undefined : lat,
     lng:          isNaN(lng) ? undefined : lng,

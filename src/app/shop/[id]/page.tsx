@@ -3,6 +3,7 @@ import { CATEGORY_EMOJI } from '@/lib/shops';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import NavigateButton from '@/components/NavigateButton';
+import PhotoGallery from '@/components/PhotoGallery';
 
 export async function generateStaticParams() {
   const shops = await fetchShops();
@@ -29,8 +30,8 @@ export default async function ShopPage({
       </div>
 
       {/* 照片或 Emoji 佔位 */}
-      {shop.photoUrl ? (
-        <img src={shop.photoUrl} alt={shop.name} className="w-full h-56 object-cover" />
+      {shop.photos && shop.photos.length > 0 ? (
+        <PhotoGallery photos={shop.photos} name={shop.name} />
       ) : (
         <div className="w-full h-48 bg-orange-100 flex items-center justify-center text-7xl">
           {CATEGORY_EMOJI[shop.category]}

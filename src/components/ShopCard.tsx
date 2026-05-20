@@ -75,7 +75,11 @@ export default function ShopCard({
               <span>🚶 步行 {shop.walkMinutes} 分鐘</span>
             ) : null}
             {shop.tags && shop.tags.length > 0 && (
-              <span className="truncate">{shop.tags.slice(0, 2).join('・')}</span>
+              <div className="flex gap-1 flex-wrap">
+                {shop.tags.slice(0, 3).map((tag) => (
+                  <span key={tag} className="bg-stone-100 text-stone-500 text-xs px-2 py-0.5 rounded-full">{tag}</span>
+                ))}
+              </div>
             )}
           </div>
         </div>

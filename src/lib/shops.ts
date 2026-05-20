@@ -13,6 +13,7 @@ export type Shop = {
   deal: string;
   walkMinutes?: number;
   photoUrl?: string;
+  photos?: string[];
   tags?: string[];
   visible: boolean;
   lat?: number;
