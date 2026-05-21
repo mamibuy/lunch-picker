@@ -2,28 +2,43 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
-function HomeIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-    </svg>
-  );
-}
-function MapIcon() {
+function UtensilsIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-      <circle cx="12" cy="10" r="3"/>
+      {/* Fork: 3 tines + handle */}
+      <line x1="4" y1="2" x2="4" y2="6"/>
+      <line x1="7" y1="2" x2="7" y2="6"/>
+      <line x1="10" y1="2" x2="10" y2="6"/>
+      <path d="M4 6 Q7 10 10 6"/>
+      <line x1="7" y1="9.5" x2="7" y2="22"/>
+      {/* Knife: curved blade + straight back */}
+      <path d="M15 2 Q20 5 20 9 L15 9"/>
+      <line x1="15" y1="2" x2="15" y2="22"/>
     </svg>
   );
 }
-function HeartIcon() {
+
+function MassageIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      <path d="M18 11V6a2 2 0 0 0-4 0"/>
+      <path d="M14 10V4a2 2 0 0 0-4 0v2"/>
+      <path d="M10 10.5V6a2 2 0 0 0-4 0v8"/>
+      <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
     </svg>
   );
 }
+
+function CartIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="9" cy="21" r="1"/>
+      <circle cx="20" cy="21" r="1"/>
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 1.99 1.61h9.72a2 2 0 0 0 1.99-1.61L23 6H6"/>
+    </svg>
+  );
+}
+
 function UserIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -34,9 +49,9 @@ function UserIcon() {
 }
 
 const TABS = [
-  { href: '/', label: '首頁', icon: <HomeIcon /> },
-  { href: '/map', label: '地圖', icon: <MapIcon /> },
-  { href: '/favorites', label: '收藏', icon: <HeartIcon /> },
+  { href: '/', label: '吃飯', icon: <UtensilsIcon /> },
+  { href: '/map', label: '快樂', icon: <MassageIcon /> },
+  { href: '/favorites', label: '蝦拼', icon: <CartIcon /> },
   { href: '/profile', label: '我的', icon: <UserIcon /> },
 ];
 
@@ -49,8 +64,10 @@ export default function BottomNav() {
           const active = pathname === href;
           return (
             <Link key={href} href={href} className="flex-1 flex flex-col items-center py-2 gap-0.5">
-              <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-150 ${active ? 'scale-105' : ''}`}
-                style={active ? { background: '#FF7A45' } : {}}>
+              <div
+                className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-150 ${active ? 'scale-105' : ''}`}
+                style={active ? { background: '#FF7A45' } : {}}
+              >
                 <span style={{ color: active ? 'white' : '#999' }}>{icon}</span>
               </div>
               <span className="text-xs font-semibold" style={{ color: active ? '#FF7A45' : '#999', fontSize: '10px' }}>{label}</span>

@@ -1,39 +1,17 @@
-'use client';
-
 import { Shop } from '@/lib/shops';
 
 type Props = {
-  shop: Pick<Shop, 'address' | 'lat' | 'lng'>;
+  shop: Pick<Shop, 'address'>;
 };
 
 export default function NavigateButton({ shop }: Props) {
-  function openMaps(userLat?: number, userLng?: number) {
-    const dest = (shop.lat && shop.lng)
-      ? `${shop.lat},${shop.lng}`
-      : encodeURIComponent(shop.address);
-
-    const origin = (userLat != null && userLng != null)
-      ? `${userLat},${userLng}`
-      : '';
-
-    window.open(`https://www.google.com/maps/dir/${origin}/${dest}`, '_blank');
-  }
-
-  function handleClick() {
-    if (!navigator.geolocation) {
-      openMaps();
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => openMaps(pos.coords.latitude, pos.coords.longitude),
-      ()    => openMaps(),
-      { timeout: 5000 },
-    );
-  }
+  const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(shop.address)}`;
 
   return (
-    <button
-      onClick={handleClick}
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
       className="w-full flex items-center gap-3 px-4 py-4 active:bg-orange-50 transition-colors text-left"
     >
       <span className="text-xl">📍</span>
@@ -42,6 +20,6 @@ export default function NavigateButton({ shop }: Props) {
         <div className="text-sm text-stone-700">{shop.address}</div>
       </div>
       <span className="text-stone-300 text-lg">›</span>
-    </button>
+    </a>
   );
 }
