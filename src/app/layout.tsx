@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import BottomNav from "@/components/BottomNav";
 
 export const metadata: Metadata = {
   title: "上班吃什麼",
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#EE6C64",
+  themeColor: "#FDEEDD",
 };
 
 export default function RootLayout({
@@ -22,7 +23,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-TW" className="h-full">
-      <body className="min-h-full antialiased">{children}</body>
+      <body className="min-h-full antialiased pb-24">
+        {children}
+        <BottomNav />
+      </body>
     </html>
   );
 }

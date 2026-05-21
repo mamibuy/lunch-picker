@@ -22,6 +22,7 @@ export type Shop = {
   lng?: number;
   badgeType?: string;
   hours?: string;
+  foodpandaUrl?: string;
 };
 
 export const CATEGORY_EMOJI: Record<Category, string> = {

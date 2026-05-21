@@ -69,6 +69,12 @@ function rowToShop(headers: string[], values: string[], rowNum: number): Shop | 
   const lngRaw = get('經度') || get('Lng') || (values[22] ?? '').trim();
   const lat = parseFloat(latRaw);
   const lng = parseFloat(lngRaw);
+  // W 欄：foodpanda 訂餐連結（先試標題，再用位置 index 22 備援，限 http 開頭）
+  const foodpandaUrl = get('foodpanda訂餐連結') || (() => {
+    const colW = (values[22] ?? '').trim();
+    return colW.startsWith('http') ? colW : '';
+  })() || undefined;
+
   const tagsRaw = get('標籤');
   // U 欄：營業時間（先試標題，再用位置 index 20）
   const hoursRaw = get('營業時間') || get('時間') || get('開放時間') || (() => {
@@ -104,6 +110,7 @@ function rowToShop(headers: string[], values: string[], rowNum: number): Shop | 
     lng:          isNaN(lng) ? undefined : lng,
     badgeType:    badgeRaw || '特約店家',
     hours:        hoursRaw || undefined,
+    foodpandaUrl,
   };
 }
 

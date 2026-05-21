@@ -1,4 +1,22 @@
 import { fetchShopById, fetchShops } from '@/lib/fetchShops';
+
+function FoodpandaLogo() {
+  return (
+    <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#FF2B85' }}>
+      <svg width="21" height="21" viewBox="0 0 22 22" fill="none">
+        <circle cx="11" cy="12.5" r="8.5" fill="white"/>
+        <circle cx="4" cy="5" r="3" fill="#1a1a1a"/>
+        <circle cx="18" cy="5" r="3" fill="#1a1a1a"/>
+        <ellipse cx="7.5" cy="10.5" rx="3" ry="2.6" fill="#1a1a1a"/>
+        <ellipse cx="14.5" cy="10.5" rx="3" ry="2.6" fill="#1a1a1a"/>
+        <circle cx="7.5" cy="10.5" r="1.3" fill="white"/>
+        <circle cx="14.5" cy="10.5" r="1.3" fill="white"/>
+        <ellipse cx="11" cy="14" rx="1.6" ry="1.2" fill="#1a1a1a"/>
+        <path d="M9 15.5 Q11 17 13 15.5" stroke="#1a1a1a" strokeWidth="0.9" fill="none" strokeLinecap="round"/>
+      </svg>
+    </div>
+  );
+}
 import { CATEGORY_EMOJI } from '@/lib/shops';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -52,11 +70,48 @@ export default async function ShopPage({
           </div>
         </div>
 
-        {/* 特約內容 */}
-        <div className="bg-orange-500 text-white rounded-3xl p-4 mb-5 shadow-sm shadow-orange-900/20">
-          <div className="text-xs font-bold opacity-75 mb-1 tracking-wider">✨ 員工特約優惠</div>
-          <div className="text-lg font-black leading-snug whitespace-pre-line">{shop.deal}</div>
-        </div>
+        {/* 特約內容 ＋ Foodpanda（特約店家限定） / 一般優惠區塊 */}
+        {shop.badgeType === '特約店家' ? (
+          <div className="rounded-3xl p-4 mb-5 shadow-sm" style={{ background: '#D4618A', boxShadow: '0 2px 12px rgba(180,60,110,0.25)' }}>
+            <div className="text-xs font-bold text-white opacity-75 mb-1 tracking-wider">✨ 員工特約優惠</div>
+            <div className="text-lg font-black text-white leading-snug whitespace-pre-line mb-4">{shop.deal}</div>
+            {/* Foodpanda 合作按鈕：有連結就可點，沒有就純展示 */}
+            {shop.foodpandaUrl ? (
+              <a
+                href={shop.foodpandaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-2xl px-3 py-2.5 flex items-center gap-2.5 active:opacity-80 transition-opacity"
+                style={{ background: 'rgba(255,255,255,0.95)' }}
+              >
+                <FoodpandaLogo />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-bold" style={{ color: '#FF2B85' }}>foodpanda 合作優惠</div>
+                  <div className="font-bold text-stone-800 text-sm">預約訂餐，外帶自取</div>
+                </div>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FF2B85" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </a>
+            ) : (
+              <div className="rounded-2xl px-3 py-2.5 flex items-center gap-2.5" style={{ background: 'rgba(255,255,255,0.95)' }}>
+                <FoodpandaLogo />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-bold" style={{ color: '#FF2B85' }}>foodpanda 合作優惠</div>
+                  <div className="font-bold text-stone-800 text-sm">預約訂餐，外帶自取</div>
+                </div>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FF2B85" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="bg-orange-500 text-white rounded-3xl p-4 mb-5 shadow-sm shadow-orange-900/20">
+            <div className="text-xs font-bold opacity-75 mb-1 tracking-wider">✨ 員工特約優惠</div>
+            <div className="text-lg font-black leading-snug whitespace-pre-line">{shop.deal}</div>
+          </div>
+        )}
 
         {shop.description && (
           <p className="text-stone-500 text-sm mb-5 leading-relaxed">{shop.description}</p>
