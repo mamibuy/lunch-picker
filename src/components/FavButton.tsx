@@ -1,33 +1,13 @@
 'use client';
-import { useState, useEffect } from 'react';
-
-const FAV_KEY = 'lp-fav-shops';
-
-export function getFavIds(): string[] {
-  try { return JSON.parse(localStorage.getItem(FAV_KEY) ?? '[]'); } catch { return []; }
-}
-
-export function setFavIds(ids: string[]) {
-  try { localStorage.setItem(FAV_KEY, JSON.stringify(ids)); } catch {}
-}
+import { useAuth } from './AuthProvider';
 
 export default function FavButton({ shopId }: { shopId: string }) {
-  const [isFav, setIsFav] = useState(false);
-
-  useEffect(() => {
-    setIsFav(getFavIds().includes(shopId));
-  }, [shopId]);
-
-  function toggle() {
-    const ids = getFavIds();
-    const next = ids.includes(shopId) ? ids.filter(id => id !== shopId) : [...ids, shopId];
-    setFavIds(next);
-    setIsFav(next.includes(shopId));
-  }
+  const { favIds, toggleFav } = useAuth();
+  const isFav = favIds.includes(shopId);
 
   return (
     <button
-      onClick={toggle}
+      onClick={() => toggleFav(shopId)}
       className="w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-transform duration-150"
       style={{ background: isFav ? '#FFF0F0' : '#F0F0F0' }}
       aria-label={isFav ? '取消收藏' : '加入收藏'}

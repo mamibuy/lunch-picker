@@ -8,7 +8,7 @@ import { LatLng, haversineDistance, geocodeAddress, geocodeAddressOnce, formatDi
 import { loadPreferences, savePreferences, loadPreferAny, savePreferAny, MAX_PREFERENCES } from '@/lib/preferences';
 import { CategoryIcon } from './CategoryIcon';
 import ShopCard from './ShopCard';
-import { getFavIds, setFavIds } from './FavButton';
+import { useAuth } from './AuthProvider';
 
 const TinderMode = dynamic(() => import('./TinderMode'), { ssr: false });
 
@@ -97,15 +97,15 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [shopCoords, setShopCoords] = useState<Record<string, LatLng>>({});
   const [geocodingTotal, setGeocodingTotal] = useState(0);
-  const [favShopIds, setFavShopIds] = useState<Set<string>>(new Set());
   const [showFavsOnly, setShowFavsOnly] = useState(false);
+  const { favIds, toggleFav } = useAuth();
+  const favShopIds = new Set(favIds);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setPreferred(loadPreferences());
     setPreferAny(loadPreferAny());
-    setFavShopIds(new Set(getFavIds()));
     try {
       const cached = localStorage.getItem('lp-shop-geo');
       if (cached) setShopCoords(JSON.parse(cached));
@@ -144,13 +144,6 @@ export default function ShopList({ shops }: { shops: Shop[] }) {
     return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.status]);
-
-  function toggleFav(id: string) {
-    const ids = getFavIds();
-    const next = ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id];
-    setFavIds(next);
-    setFavShopIds(new Set(next));
-  }
 
   function openPrefPanel() {
     setDraftPref(preferred);
