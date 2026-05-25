@@ -1,7 +1,6 @@
 'use client';
 import { useAuth } from '@/components/AuthProvider';
 import { useEffect, useState } from 'react';
-import { fetchShops } from '@/lib/fetchShops';
 import { Shop } from '@/lib/shops';
 import ShopCard from '@/components/ShopCard';
 import Link from 'next/link';
@@ -12,7 +11,7 @@ export default function FavoritesPage() {
   const [shopsLoading, setShopsLoading] = useState(true);
 
   useEffect(() => {
-    fetchShops().then(shops => {
+    fetch('/api/shops').then(r => r.json()).then(shops => {
       setAllShops(shops);
       setShopsLoading(false);
     });
