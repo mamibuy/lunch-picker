@@ -15,12 +15,15 @@ export type Profile = {
   birthday_md: string | null;
   is_staff_committee: boolean;
   is_active: boolean;
+  company_name: string | null;
+  created_at?: string;
 };
 
 type AuthContextType = {
   user: User | null;
   profile: Profile | null;
   loading: boolean;
+  isPending: boolean;
   favIds: string[];
   migrationDone: boolean;
   toggleFav: (shopId: string) => void;
@@ -29,7 +32,7 @@ type AuthContextType = {
 };
 
 const AuthContext = createContext<AuthContextType>({
-  user: null, profile: null, loading: true,
+  user: null, profile: null, loading: true, isPending: false,
   favIds: [], migrationDone: false,
   toggleFav: () => {}, signOut: async () => {}, refreshProfile: async () => {},
 });
@@ -102,10 +105,12 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   }
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       setUser(user);
-      if (user) fetchProfile(user.id);
+      if (user) await fetchProfile(user.id);
       loadFavorites(user?.id ?? null);
+      setLoading(false);
+    }).catch(() => {
       setLoading(false);
     });
 
@@ -113,7 +118,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       const newUser = session?.user ?? null;
       setUser(newUser);
       if (newUser) {
-        fetchProfile(newUser.id);
+        await fetchProfile(newUser.id);
         if (event === 'SIGNED_IN') {
           const didMigrate = await migrateLocalData(newUser.id);
           if (didMigrate) setMigrationDone(true);
@@ -137,8 +142,10 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     loadFavorites(null);
   }
 
+  const isPending = !loading && user !== null && profile !== null && profile.is_active === false;
+
   return (
-    <AuthContext.Provider value={{ user, profile, loading, favIds, migrationDone, toggleFav, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading, isPending, favIds, migrationDone, toggleFav, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

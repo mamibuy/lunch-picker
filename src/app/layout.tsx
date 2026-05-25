@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
 import AuthProvider from "@/components/AuthProvider";
+import PendingGuard from "@/components/PendingGuard";
 
 export const metadata: Metadata = {
   title: "上班吃什麼",
@@ -26,8 +27,10 @@ export default function RootLayout({
     <html lang="zh-TW" className="h-full">
       <body className="min-h-full antialiased pb-24">
         <AuthProvider>
-          {children}
-          <BottomNav />
+          <PendingGuard>
+            {children}
+            <BottomNav />
+          </PendingGuard>
         </AuthProvider>
       </body>
     </html>

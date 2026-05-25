@@ -11,6 +11,7 @@ export default function ProfileEditPage() {
 
   const [displayName, setDisplayName] = useState('');
   const [department, setDepartment] = useState('');
+  const [companyName, setCompanyName] = useState('');
   const [phone, setPhone] = useState('');
   const [commonAddress, setCommonAddress] = useState('');
   const [birthdayMd, setBirthdayMd] = useState('');
@@ -25,6 +26,7 @@ export default function ProfileEditPage() {
     if (profile) {
       setDisplayName(profile.display_name ?? '');
       setDepartment(profile.department ?? '');
+      setCompanyName(profile.company_name ?? '');
       setPhone(profile.phone ?? '');
       setCommonAddress(profile.common_address ?? '');
       setBirthdayMd(profile.birthday_md ?? '');
@@ -44,6 +46,7 @@ export default function ProfileEditPage() {
     const { error } = await supabase.from('profiles').update({
       display_name: displayName.trim(),
       department: department.trim() || null,
+      company_name: companyName.trim() || null,
       phone: phone.trim() || null,
       common_address: commonAddress.trim() || null,
       birthday_md: birthdayMd.trim() || null,
@@ -92,7 +95,7 @@ export default function ProfileEditPage() {
             />
           </div>
 
-          <div>
+          <div className="mb-4">
             <label className="block text-sm font-bold text-stone-700 mb-1.5">
               部門 <span className="text-red-400">*</span>
             </label>
@@ -103,6 +106,18 @@ export default function ProfileEditPage() {
               placeholder="例：行銷部、工程部"
               className="w-full border-2 rounded-2xl px-4 py-3 text-base outline-none transition-colors"
               style={{ borderColor: department ? '#FF7A45' : '#EEE', fontSize: '16px' }}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-stone-700 mb-1.5">公司名稱</label>
+            <input
+              type="text"
+              value={companyName}
+              onChange={e => setCompanyName(e.target.value)}
+              placeholder="例：媽咪買股份有限公司"
+              className="w-full border-2 rounded-2xl px-4 py-3 text-base outline-none transition-colors"
+              style={{ borderColor: companyName ? '#FF7A45' : '#EEE', fontSize: '16px' }}
             />
           </div>
         </div>

@@ -55,8 +55,9 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#FDEEDD' }}>
-        <div className="animate-pulse text-2xl">🍱</div>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3" style={{ background: '#FDEEDD' }}>
+        <div className="animate-bounce text-4xl">🍱</div>
+        <p className="text-stone-400 text-sm">載入中…</p>
       </div>
     );
   }
@@ -148,6 +149,13 @@ export default function ProfilePage() {
             </div>
             <span className="text-stone-300 text-lg">›</span>
           </Link>
+          {profile?.is_staff_committee && (
+            <Link href="/admin/members" className="flex items-center gap-3 px-4 py-4 active:bg-orange-50 transition-colors">
+              <span className="text-xl">🛠️</span>
+              <span className="flex-1 font-semibold text-stone-700 text-sm">管理公司帳號</span>
+              <span className="text-stone-300 text-lg">›</span>
+            </Link>
+          )}
         </div>
 
         {/* 登出 */}
