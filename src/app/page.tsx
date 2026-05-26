@@ -1,11 +1,13 @@
 import { fetchShops } from '@/lib/fetchShops';
 import ShopList from '@/components/ShopList';
 import HomeHeader from '@/components/HomeHeader';
+import { FOOD_CATEGORIES } from '@/lib/shops';
 
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  const shops = await fetchShops();
+  const allShops = await fetchShops();
+  const shops = allShops.filter(s => (FOOD_CATEGORIES as string[]).includes(s.category));
 
   return (
     <div className="min-h-screen" style={{ background: '#FDEEDD' }}>

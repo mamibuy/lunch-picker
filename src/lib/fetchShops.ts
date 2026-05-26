@@ -111,6 +111,7 @@ function rowToShop(headers: string[], values: string[], rowNum: number): Shop | 
     badgeType:    badgeRaw || '特約店家',
     hours:        hoursRaw || undefined,
     foodpandaUrl,
+    lineUrl: get('LINE@連結') || get('LINE@') || get('line') || undefined,
   };
 }
 

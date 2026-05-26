@@ -17,7 +17,17 @@ function FoodpandaLogo() {
     </div>
   );
 }
-import { CATEGORY_EMOJI } from '@/lib/shops';
+import { CATEGORY_EMOJI, SERVICE_CATEGORIES } from '@/lib/shops';
+
+function LineLogo() {
+  return (
+    <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#00B900' }}>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
+        <path d="M12 2C6.48 2 2 5.92 2 10.76c0 3.26 2.07 6.13 5.22 7.78L6 22l4.28-2.28c.55.09 1.13.14 1.72.14 5.52 0 10-3.92 10-8.76S17.52 2 12 2z"/>
+      </svg>
+    </div>
+  );
+}
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import NavigateButton from '@/components/NavigateButton';
@@ -36,6 +46,7 @@ export default async function ShopPage({
 }) {
   const { id } = await params;
   const shop = await fetchShopById(id);
+  const isService = shop ? (SERVICE_CATEGORIES as string[]).includes(shop.category) : false;
 
   if (!shop) notFound();
 
@@ -70,40 +81,73 @@ export default async function ShopPage({
           </div>
         </div>
 
-        {/* 特約內容 ＋ Foodpanda（特約店家限定） / 一般優惠區塊 */}
+        {/* 特約優惠區塊 */}
         {shop.badgeType === '特約店家' ? (
-          <div className="rounded-3xl p-4 mb-5 shadow-sm" style={{ background: '#D4618A', boxShadow: '0 2px 12px rgba(180,60,110,0.25)' }}>
+          <div className="rounded-3xl p-4 mb-5 shadow-sm" style={{
+            background: isService ? '#3A7D44' : '#D4618A',
+            boxShadow: isService ? '0 2px 12px rgba(0,120,60,0.25)' : '0 2px 12px rgba(180,60,110,0.25)',
+          }}>
             <div className="text-xs font-bold text-white opacity-75 mb-1 tracking-wider">✨ 員工特約優惠</div>
             <div className="text-lg font-black text-white leading-snug whitespace-pre-line mb-4">{shop.deal}</div>
-            {/* Foodpanda 合作按鈕：有連結就可點，沒有就純展示 */}
-            {shop.foodpandaUrl ? (
-              <a
-                href={shop.foodpandaUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-2xl px-3 py-2.5 flex items-center gap-2.5 active:opacity-80 transition-opacity"
-                style={{ background: 'rgba(255,255,255,0.95)' }}
-              >
-                <FoodpandaLogo />
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs font-bold" style={{ color: '#FF2B85' }}>foodpanda 合作優惠</div>
-                  <div className="font-bold text-stone-800 text-sm">預約訂餐，外帶自取</div>
+            {/* 美業：LINE@ 預約按鈕 */}
+            {isService ? (
+              shop.lineUrl ? (
+                <a
+                  href={shop.lineUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-2xl px-3 py-2.5 flex items-center gap-2.5 active:opacity-80 transition-opacity"
+                  style={{ background: 'rgba(255,255,255,0.95)' }}
+                >
+                  <LineLogo />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-bold" style={{ color: '#00B900' }}>加入官方 LINE@</div>
+                    <div className="font-bold text-stone-800 text-sm">輸入「企業名稱」預約享折扣</div>
+                  </div>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00B900" strokeWidth="2.5" strokeLinecap="round">
+                    <path d="M9 18l6-6-6-6"/>
+                  </svg>
+                </a>
+              ) : (
+                <div className="rounded-2xl px-3 py-2.5 flex items-center gap-2.5" style={{ background: 'rgba(255,255,255,0.95)' }}>
+                  <LineLogo />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-bold" style={{ color: '#00B900' }}>加入官方 LINE@</div>
+                    <div className="font-bold text-stone-800 text-sm">輸入「企業名稱」預約享折扣</div>
+                  </div>
                 </div>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FF2B85" strokeWidth="2.5" strokeLinecap="round">
-                  <path d="M9 18l6-6-6-6"/>
-                </svg>
-              </a>
+              )
             ) : (
-              <div className="rounded-2xl px-3 py-2.5 flex items-center gap-2.5" style={{ background: 'rgba(255,255,255,0.95)' }}>
-                <FoodpandaLogo />
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs font-bold" style={{ color: '#FF2B85' }}>foodpanda 合作優惠</div>
-                  <div className="font-bold text-stone-800 text-sm">預約訂餐，外帶自取</div>
+              /* 餐廳：foodpanda 按鈕 */
+              shop.foodpandaUrl ? (
+                <a
+                  href={shop.foodpandaUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-2xl px-3 py-2.5 flex items-center gap-2.5 active:opacity-80 transition-opacity"
+                  style={{ background: 'rgba(255,255,255,0.95)' }}
+                >
+                  <FoodpandaLogo />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-bold" style={{ color: '#FF2B85' }}>foodpanda 合作優惠</div>
+                    <div className="font-bold text-stone-800 text-sm">預約訂餐，外帶自取</div>
+                  </div>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FF2B85" strokeWidth="2.5" strokeLinecap="round">
+                    <path d="M9 18l6-6-6-6"/>
+                  </svg>
+                </a>
+              ) : (
+                <div className="rounded-2xl px-3 py-2.5 flex items-center gap-2.5" style={{ background: 'rgba(255,255,255,0.95)' }}>
+                  <FoodpandaLogo />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-bold" style={{ color: '#FF2B85' }}>foodpanda 合作優惠</div>
+                    <div className="font-bold text-stone-800 text-sm">預約訂餐，外帶自取</div>
+                  </div>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FF2B85" strokeWidth="2.5" strokeLinecap="round">
+                    <path d="M9 18l6-6-6-6"/>
+                  </svg>
                 </div>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FF2B85" strokeWidth="2.5" strokeLinecap="round">
-                  <path d="M9 18l6-6-6-6"/>
-                </svg>
-              </div>
+              )
             )}
           </div>
         ) : (
