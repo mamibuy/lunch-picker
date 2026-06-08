@@ -1,6 +1,7 @@
 'use client';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/components/AuthProvider';
 
 function UtensilsIcon() {
   return (
@@ -66,22 +67,43 @@ const TABS = [
   { href: '/profile', label: '我的', icon: <UserIcon /> },
 ];
 
+function AdminIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+      <path d="M2 17l10 5 10-5"/>
+      <path d="M2 12l10 5 10-5"/>
+    </svg>
+  );
+}
+
 export default function BottomNav() {
   const pathname = usePathname();
+  const { profile } = useAuth();
+  const isAdmin = profile?.is_staff_committee === true && profile?.is_active === true;
+
+  // hide bottom nav on admin pages
+  if (pathname.startsWith('/admin')) return null;
+
+  const tabs = [
+    ...TABS,
+    ...(isAdmin ? [{ href: '/admin', label: '後台', icon: <AdminIcon /> }] : []),
+  ];
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50" style={{ background: 'white', borderTop: '1px solid #F0EDE8', boxShadow: '0 -4px 16px rgba(0,0,0,0.06)' }}>
       <div className="max-w-lg mx-auto flex pb-safe">
-        {TABS.map(({ href, label, icon }) => {
-          const active = pathname === href;
+        {tabs.map(({ href, label, icon }) => {
+          const active = pathname === href || (href === '/admin' && pathname.startsWith('/admin'));
           return (
             <Link key={href} href={href} className="flex-1 flex flex-col items-center py-2 gap-0.5">
               <div
                 className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-150 ${active ? 'scale-105' : ''}`}
-                style={active ? { background: '#FF7A45' } : {}}
+                style={active ? { background: href === '/admin' ? '#475569' : '#FF7A45' } : {}}
               >
                 <span style={{ color: active ? 'white' : '#999' }}>{icon}</span>
               </div>
-              <span className="text-xs font-semibold" style={{ color: active ? '#FF7A45' : '#999', fontSize: '10px' }}>{label}</span>
+              <span className="text-xs font-semibold" style={{ color: active ? (href === '/admin' ? '#475569' : '#FF7A45') : '#999', fontSize: '10px' }}>{label}</span>
             </Link>
           );
         })}

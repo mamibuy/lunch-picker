@@ -62,9 +62,10 @@ export default function AdminMembersPage() {
       <div className="max-w-2xl mx-auto px-4 pt-8 pb-24">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <span className="text-2xl">👥</span>
+            <a href="/admin" className="text-stone-400 hover:text-stone-600 text-sm">← 後台</a>
+            <span className="text-stone-200">|</span>
             <div>
-              <h1 className="text-xl font-black text-stone-800">會員管理</h1>
+              <h1 className="text-xl font-black text-stone-800">員工管理</h1>
               <p className="text-xs text-stone-400">共 {members.length} 人</p>
             </div>
           </div>

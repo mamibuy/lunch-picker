@@ -194,10 +194,57 @@ function getMockShops(): Shop[] {
   ];
 }
 
+// ── 從 Supabase 讀取 ─────────────────────────────────────────
+async function fetchShopsFromSupabase(visibleOnly = true): Promise<Shop[]> {
+  const { createClient } = await import('@supabase/supabase-js');
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  let query = supabase.from('shops').select('*').order('name');
+  if (visibleOnly) query = query.eq('visible', true);
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  return (data ?? []).map((row) => ({
+    id: row.id as string,
+    name: row.name as string,
+    category: row.category as Category,
+    description: row.description ?? undefined,
+    address: row.address as string,
+    mapUrl: row.map_url ?? undefined,
+    phone: row.phone ?? undefined,
+    priceRange: row.price_range as PriceRange | undefined,
+    deal: row.deal ?? undefined,
+    tags: (row.tags as string[] | null) ?? undefined,
+    photos: (row.photos as string[] | null) ?? undefined,
+    photoUrl: row.photo_url ?? undefined,
+    badgeType: row.badge_type ?? '附近店家',
+    hours: row.hours ?? undefined,
+    lat: row.lat ?? undefined,
+    lng: row.lng ?? undefined,
+    foodpandaUrl: row.foodpanda_url ?? undefined,
+    lineUrl: row.line_url ?? undefined,
+    walkMinutes: row.walk_minutes ?? undefined,
+    visible: row.visible as boolean,
+  }));
+}
+
 // ── 對外介面 ──────────────────────────────────────────────────
 export async function fetchShops(): Promise<Shop[]> {
-  const url = process.env.SHEET_CSV_URL;
+  // 優先從 Supabase 讀取
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    try {
+      return await fetchShopsFromSupabase(true);
+    } catch (e) {
+      console.error('[Supabase] 讀取失敗，改用備援：', e);
+    }
+  }
 
+  // Fallback: Google Sheets
+  const url = process.env.SHEET_CSV_URL;
   if (url) {
     try {
       return await fetchFromSheet(url);
@@ -212,4 +259,39 @@ export async function fetchShops(): Promise<Shop[]> {
 export async function fetchShopById(id: string): Promise<Shop | undefined> {
   const shops = await fetchShops();
   return shops.find((s) => s.id === id);
+}
+
+// 後台用：讀取所有店家（含隱藏），需要 service_role key
+export async function fetchAllShopsForAdmin(): Promise<Shop[]> {
+  const { createClient } = await import('@supabase/supabase-js');
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const { data, error } = await supabase.from('shops').select('*').order('name');
+  if (error) throw error;
+
+  return (data ?? []).map((row) => ({
+    id: row.id as string,
+    name: row.name as string,
+    category: row.category as Category,
+    description: row.description ?? undefined,
+    address: row.address as string,
+    mapUrl: row.map_url ?? undefined,
+    phone: row.phone ?? undefined,
+    priceRange: row.price_range as PriceRange | undefined,
+    deal: row.deal ?? undefined,
+    tags: (row.tags as string[] | null) ?? undefined,
+    photos: (row.photos as string[] | null) ?? undefined,
+    photoUrl: row.photo_url ?? undefined,
+    badgeType: row.badge_type ?? '附近店家',
+    hours: row.hours ?? undefined,
+    lat: row.lat ?? undefined,
+    lng: row.lng ?? undefined,
+    foodpandaUrl: row.foodpanda_url ?? undefined,
+    lineUrl: row.line_url ?? undefined,
+    walkMinutes: row.walk_minutes ?? undefined,
+    visible: row.visible as boolean,
+  }));
 }
