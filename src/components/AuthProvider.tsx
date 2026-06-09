@@ -59,7 +59,11 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const supabase = createBrowserClient();
 
   async function fetchProfile(userId: string) {
-    const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
+    const fetchPromise = supabase.from('profiles').select('*').eq('id', userId).single();
+    const timeoutPromise = new Promise<{ data: null }>((resolve) =>
+      setTimeout(() => resolve({ data: null }), 3000)
+    );
+    const { data } = await Promise.race([fetchPromise, timeoutPromise]);
     setProfile(data ?? null);
   }
 
@@ -122,7 +126,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      clearTimeout(loadingTimeout);
       const newUser = session?.user ?? null;
       setUser(newUser);
       if (newUser) {
