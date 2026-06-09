@@ -105,18 +105,24 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   }
 
   useEffect(() => {
+    // Safety net: always stop loading after 8s in case Supabase never responds
+    const loadingTimeout = setTimeout(() => setLoading(false), 8000);
+
     supabase.auth.getUser().then(async ({ data: { user } }) => {
+      clearTimeout(loadingTimeout);
       setUser(user);
       if (user) {
         try { await fetchProfile(user.id); } catch { /* profile may not exist yet */ }
       }
-      try { await loadFavorites(user?.id ?? null); } catch { /* ignore */ }
+      loadFavorites(user?.id ?? null);
       setLoading(false);
     }).catch(() => {
+      clearTimeout(loadingTimeout);
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      clearTimeout(loadingTimeout);
       const newUser = session?.user ?? null;
       setUser(newUser);
       if (newUser) {
@@ -127,7 +133,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             if (didMigrate) setMigrationDone(true);
           } catch { /* ignore */ }
         }
-        try { await loadFavorites(newUser.id); } catch { /* ignore */ }
+        loadFavorites(newUser.id);
       } else {
         setProfile(null);
         loadFavorites(null);
@@ -135,7 +141,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => { clearTimeout(loadingTimeout); subscription.unsubscribe(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
