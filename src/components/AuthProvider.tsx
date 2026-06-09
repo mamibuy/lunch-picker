@@ -107,8 +107,10 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       setUser(user);
-      if (user) await fetchProfile(user.id);
-      loadFavorites(user?.id ?? null);
+      if (user) {
+        try { await fetchProfile(user.id); } catch { /* profile may not exist yet */ }
+      }
+      try { await loadFavorites(user?.id ?? null); } catch { /* ignore */ }
       setLoading(false);
     }).catch(() => {
       setLoading(false);
@@ -118,12 +120,14 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       const newUser = session?.user ?? null;
       setUser(newUser);
       if (newUser) {
-        await fetchProfile(newUser.id);
+        try { await fetchProfile(newUser.id); } catch { /* profile may not exist yet */ }
         if (event === 'SIGNED_IN') {
-          const didMigrate = await migrateLocalData(newUser.id);
-          if (didMigrate) setMigrationDone(true);
+          try {
+            const didMigrate = await migrateLocalData(newUser.id);
+            if (didMigrate) setMigrationDone(true);
+          } catch { /* ignore */ }
         }
-        await loadFavorites(newUser.id);
+        try { await loadFavorites(newUser.id); } catch { /* ignore */ }
       } else {
         setProfile(null);
         loadFavorites(null);
