@@ -22,7 +22,7 @@ export async function POST(request: Request) {
   // 使用 service role key 建立帳號（繞過 email 驗證）
   const adminClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!.trim(),
-    process.env.SUPABASE_SERVICE_ROLE_KEY!.trim()
+    process.env.SUPABASE_SERVICE_ROLE_KEY!.replace(/\s+/g, '')
   );
 
   const { data, error } = await adminClient.auth.admin.createUser({
