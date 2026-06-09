@@ -106,7 +106,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     // Safety net: always stop loading after 8s in case Supabase never responds
-    const loadingTimeout = setTimeout(() => setLoading(false), 8000);
+    const loadingTimeout = setTimeout(() => setLoading(false), 5000);
 
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       clearTimeout(loadingTimeout);

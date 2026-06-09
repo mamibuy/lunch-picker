@@ -3,7 +3,7 @@ import ShopList from '@/components/ShopList';
 import HomeHeader from '@/components/HomeHeader';
 import { FOOD_CATEGORIES } from '@/lib/shops';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300; // 快取 5 分鐘
 
 export default async function HomePage() {
   const allShops = await fetchShops();
